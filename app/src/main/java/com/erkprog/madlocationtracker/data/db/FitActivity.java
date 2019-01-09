@@ -15,6 +15,10 @@ public class FitActivity {
   @ColumnInfo(name = "start_time")
   private Date startTime;
 
+  public FitActivity(Date startTime) {
+    this.startTime = startTime;
+  }
+
   public Date getStartTime() {
     return startTime;
   }
