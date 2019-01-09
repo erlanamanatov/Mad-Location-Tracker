@@ -97,10 +97,11 @@ public class LocationUpdatesService extends Service {
   @Override
   public boolean onUnbind(Intent intent) {
     Log.i(TAG, "Last client unbound from service");
-    Log.i(TAG, "Starting foreground service");
-    //TODO: check is requesting updates before starting foreground service
-    startForeground(NOTIFICATION_ID, getNotification());
-    return true; // Ensures onRebind() is called when a client re-binds.
+    if (Utils.requestingLocationUpdates(this)) {
+      Log.i(TAG, "Starting foreground service");
+      startForeground(NOTIFICATION_ID, getNotification());
+    }
+    return true;
   }
 
   @Override
@@ -118,6 +119,7 @@ public class LocationUpdatesService extends Service {
         .setContentTitle("Mad Location Tracker")
         .setContentIntent(activityPendingIntent)
         .setOngoing(true)
+        .setVibrate(null)
         .setPriority(Notification.PRIORITY_HIGH)
         .setSmallIcon(R.mipmap.ic_launcher)
         .setTicker(text)
@@ -145,11 +147,13 @@ public class LocationUpdatesService extends Service {
 
   public void requestLocationUpdates() {
     Log.i(TAG, "Requesting location updates");
+    Utils.setRequestingLocationUpdates(this, true);
     startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
     try {
       mFusedLocationClient.requestLocationUpdates(mLocationRequest,
           mLocationCallback, Looper.myLooper());
     } catch (SecurityException unlikely) {
+      Utils.setRequestingLocationUpdates(this, false);
       Log.e(TAG, "Lost location permission. Could not request updates. " + unlikely);
     }
   }
@@ -157,9 +161,11 @@ public class LocationUpdatesService extends Service {
   public void removeLocationUpdates() {
     Log.i(TAG, "Removing location updates");
     try {
+      Utils.setRequestingLocationUpdates(this, false);
       mFusedLocationClient.removeLocationUpdates(mLocationCallback);
       stopSelf();
     } catch (SecurityException unlikely) {
+      Utils.setRequestingLocationUpdates(this, true);
       Log.e(TAG, "Lost location permission. Could not remove updates. " + unlikely);
     }
   }
