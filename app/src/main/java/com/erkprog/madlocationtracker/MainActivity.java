@@ -1,18 +1,27 @@
 package com.erkprog.madlocationtracker;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.IBinder;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
   private LocationUpdatesService mService = null;
+  private static final int REQUEST_GPS = 1;
 
   private boolean mBound = false;
 
@@ -67,12 +76,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   public void onClick(View v) {
     switch (v.getId()) {
       case R.id.button_request_location:
-        mService.requestLocationUpdates();
+        if (isGpsPersmissionGranted()) {
+          if (isGpsEnabled()) {
+            mService.requestLocationUpdates();
+          } else {
+            showTurnGpsOnDialog();
+          }
+        } else {
+          requestGpsPermission();
+        }
         break;
 
       case R.id.button_remove_locations:
         mService.removeLocationUpdates();
         break;
+    }
+  }
+
+  private boolean isGpsEnabled() {
+    LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+    return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+  }
+
+
+  private boolean isGpsPersmissionGranted() {
+    return ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+  }
+
+  private void requestGpsPermission() {
+    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_GPS);
+  }
+
+  private void showTurnGpsOnDialog() {
+    AlertDialog.Builder builder = new AlertDialog.Builder(this)
+        .setMessage("Turn on gps in settings")
+        .setTitle("Gps is disabled")
+        .setPositiveButton("Go to settings", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
+        .setNegativeButton("Cancel", (dialog, which) -> Toast.makeText(MainActivity.this, "Turn GPS on to get forecast for current location", Toast.LENGTH_SHORT).show());
+    builder.show();
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    if (requestCode == REQUEST_GPS) {
+      if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        mService.requestLocationUpdates();
+      } else {
+        Toast.makeText(this, "Location Permission denied", Toast.LENGTH_SHORT).show();
+      }
     }
   }
 }
