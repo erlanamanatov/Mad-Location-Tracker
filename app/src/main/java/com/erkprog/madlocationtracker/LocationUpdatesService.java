@@ -18,6 +18,7 @@ import android.support.v4.app.NotificationCompat;
 import com.erkprog.madlocationtracker.data.db.FitActivity;
 import com.erkprog.madlocationtracker.data.db.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
+import com.erkprog.madlocationtracker.ui.CreateFitActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -125,7 +126,7 @@ public class LocationUpdatesService extends Service {
   private Notification getNotification() {
     CharSequence text = "Getting location updates";
     PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
-        new Intent(this, MainActivity.class), 0);
+        new Intent(this, CreateFitActivity.class), 0);
 
     NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
         .setContentText(text)
@@ -210,7 +211,7 @@ public class LocationUpdatesService extends Service {
   }
 
   public class LocalBinder extends Binder {
-    LocationUpdatesService getService() {
+    public LocationUpdatesService getService() {
       return LocationUpdatesService.this;
     }
   }

@@ -6,14 +6,14 @@ import android.util.Log;
 
 public class Utils {
 
-  static final String KEY_REQUESTING_LOCATION_UPDATES = "requesting_location_updates";
+  public static final String KEY_REQUESTING_LOCATION_UPDATES = "requesting_location_updates";
 
-  static boolean requestingLocationUpdates(Context context) {
+  public static boolean requestingLocationUpdates(Context context) {
     return PreferenceManager.getDefaultSharedPreferences(context)
         .getBoolean(KEY_REQUESTING_LOCATION_UPDATES, false);
   }
 
-  static void setRequestingLocationUpdates(Context context, boolean requestingLocationUpdates) {
+  public static void setRequestingLocationUpdates(Context context, boolean requestingLocationUpdates) {
     PreferenceManager.getDefaultSharedPreferences(context)
         .edit()
         .putBoolean(KEY_REQUESTING_LOCATION_UPDATES, requestingLocationUpdates)

@@ -1,4 +1,4 @@
-package com.erkprog.madlocationtracker;
+package com.erkprog.madlocationtracker.ui;
 
 import android.Manifest;
 import android.content.ComponentName;
@@ -20,7 +20,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
+import com.erkprog.madlocationtracker.LocationUpdatesService;
+import com.erkprog.madlocationtracker.R;
+import com.erkprog.madlocationtracker.Utils;
+
+public class CreateFitActivity extends AppCompatActivity implements View.OnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
   private LocationUpdatesService mService = null;
   private static final int REQUEST_GPS = 1;
@@ -47,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
+    setContentView(R.layout.activity_create_fit_activity);
     init();
   }
 
@@ -106,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   }
 
   private boolean isGpsPersmissionGranted() {
-    return ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    return ActivityCompat.checkSelfPermission(CreateFitActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
   }
 
   private void requestGpsPermission() {
@@ -118,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         .setMessage("Turn on gps in settings")
         .setTitle("Gps is disabled")
         .setPositiveButton("To settings", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
-        .setNegativeButton("Cancel", (dialog, which) -> Toast.makeText(MainActivity.this, "Turn GPS on to get location updates", Toast.LENGTH_SHORT)
+        .setNegativeButton("Cancel", (dialog, which) -> Toast.makeText(CreateFitActivity.this, "Turn GPS on to get location updates", Toast.LENGTH_SHORT)
             .show());
     builder.show();
   }
