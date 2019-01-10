@@ -16,6 +16,7 @@ import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 
 import com.erkprog.madlocationtracker.data.db.FitActivity;
+import com.erkprog.madlocationtracker.data.db.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -55,6 +56,7 @@ public class LocationUpdatesService extends Service {
 
   @Override
   public void onCreate() {
+    Utils.logd(TAG, "Service on create");
     mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
     mLocationCallback = new LocationCallback() {
@@ -143,6 +145,10 @@ public class LocationUpdatesService extends Service {
   private void onNewLocation(Location location) {
     mLocation = location;
     Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + fitActivityId);
+    if (fitActivityId != -1) {
+      mServiceHandler.post(() -> mRepository.getDatabase().locationDao()
+          .addLocation(new LocationItem(location, fitActivityId)));
+    }
   }
 
   private void createLocationRequest() {
