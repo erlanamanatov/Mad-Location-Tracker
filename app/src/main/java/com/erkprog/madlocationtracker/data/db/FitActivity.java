@@ -15,6 +15,9 @@ public class FitActivity {
   @ColumnInfo(name = "start_time")
   private Date startTime;
 
+  @ColumnInfo(name = "end_time")
+  private Date endTime;
+
   private float distance;
 
   public FitActivity() {
@@ -44,5 +47,23 @@ public class FitActivity {
 
   public void addDistance(float extra) {
     this.distance += extra;
+  }
+
+  public Date getEndTime() {
+    return endTime;
+  }
+
+  public void setEndTime(Date endTime) {
+    this.endTime = endTime;
+  }
+
+  @Override
+  public String toString() {
+    return "FitActivity{" +
+        "id=" + id +
+        ", startTime=" + startTime +
+        ", endTime=" + endTime +
+        ", distance=" + distance +
+        '}';
   }
 }

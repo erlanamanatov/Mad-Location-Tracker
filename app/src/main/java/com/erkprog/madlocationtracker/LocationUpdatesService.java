@@ -189,14 +189,24 @@ public class LocationUpdatesService extends Service {
     try {
       Utils.setRequestingLocationUpdates(this, false);
       mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-      mLocation = null;
-      mFitActivityId = -1;
-      mCurrentFitActivity = null;
+      saveFitActivityToDB();
       stopSelf();
     } catch (SecurityException unlikely) {
       Utils.setRequestingLocationUpdates(this, true);
       Utils.logd(TAG, "Lost location permission. Could not remove updates. " + unlikely);
     }
+  }
+
+  private void saveFitActivityToDB() {
+    mCurrentFitActivity.setEndTime(Calendar.getInstance().getTime());
+    mServiceHandler.post(() -> {
+      mRepository.getDatabase().acitivityDao()
+          .updateActivity(mCurrentFitActivity);
+      Utils.logd(TAG, "Save activity to DB: " + mCurrentFitActivity.toString());
+      mLocation = null;
+      mFitActivityId = -1;
+      mCurrentFitActivity = null;
+    });
   }
 
   public class LocalBinder extends Binder {
