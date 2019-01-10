@@ -6,6 +6,8 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.PrimaryKey;
 import android.location.Location;
 
+import java.util.Date;
+
 @Entity(tableName = "locations",
     foreignKeys = @ForeignKey(entity = FitActivity.class,
         parentColumns = "id",
@@ -22,14 +24,17 @@ public class LocationItem {
   @ColumnInfo(name = "activity_id")
   private long fitActivityId;
 
+  private Date date;
+
   public LocationItem() {
 
   }
 
-  public LocationItem(Location location, long fitActivityId) {
+  public LocationItem(Location location, long fitActivityId, Date date) {
     latitude = location.getLatitude();
     longitude = location.getLongitude();
     this.fitActivityId = fitActivityId;
+    this.date = date;
   }
 
   public double getLatitude() {
@@ -54,5 +59,13 @@ public class LocationItem {
 
   public void setFitActivityId(long fitActivityId) {
     this.fitActivityId = fitActivityId;
+  }
+
+  public Date getDate() {
+    return date;
+  }
+
+  public void setDate(Date date) {
+    this.date = date;
   }
 }

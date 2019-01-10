@@ -153,7 +153,7 @@ public class LocationUpdatesService extends Service {
     Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
     if (mFitActivityId != -1) {
       mServiceHandler.post(() -> mRepository.getDatabase().locationDao()
-          .addLocation(new LocationItem(location, mFitActivityId)));
+          .addLocation(new LocationItem(location, mFitActivityId, Calendar.getInstance().getTime())));
     }
   }
 

@@ -12,6 +12,8 @@ public class FitActivity {
   @PrimaryKey(autoGenerate = true)
   public long id;
 
+  private String name;
+
   @ColumnInfo(name = "start_time")
   private Date startTime;
 
@@ -55,6 +57,14 @@ public class FitActivity {
 
   public void setEndTime(Date endTime) {
     this.endTime = endTime;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   @Override
