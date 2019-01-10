@@ -2,6 +2,7 @@ package com.erkprog.madlocationtracker;
 
 import android.content.Context;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class Utils {
 
@@ -17,5 +18,9 @@ public class Utils {
         .edit()
         .putBoolean(KEY_REQUESTING_LOCATION_UPDATES, requestingLocationUpdates)
         .apply();
+  }
+
+  public static void logd(String tag, String message) {
+    Log.d(tag, String.format("%s [%s]", message, Thread.currentThread().getName()));
   }
 }

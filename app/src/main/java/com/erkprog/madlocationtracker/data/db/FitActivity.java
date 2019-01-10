@@ -10,7 +10,7 @@ import java.util.Date;
 public class FitActivity {
 
   @PrimaryKey(autoGenerate = true)
-  public int id;
+  public long id;
 
   @ColumnInfo(name = "start_time")
   private Date startTime;

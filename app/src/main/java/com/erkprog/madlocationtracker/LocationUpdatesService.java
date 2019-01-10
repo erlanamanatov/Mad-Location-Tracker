@@ -14,13 +14,16 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
+import com.erkprog.madlocationtracker.data.db.FitActivity;
+import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+
+import java.util.Calendar;
 
 public class LocationUpdatesService extends Service {
 
@@ -36,13 +39,16 @@ public class LocationUpdatesService extends Service {
   private static final String CHANNEL_ID = "channel 1";
   private static final int NOTIFICATION_ID = 123;
 
+  HandlerThread handlerThread;
   private Handler mServiceHandler;
 
+  private long fitActivityId = -1;
   private LocationRequest mLocationRequest;
   private NotificationManager mNotificationManager;
   private FusedLocationProviderClient mFusedLocationClient;
   private LocationCallback mLocationCallback;
   private Location mLocation;
+  private LocalRepository mRepository;
 
   public LocationUpdatesService() {
   }
@@ -61,7 +67,7 @@ public class LocationUpdatesService extends Service {
 
     createLocationRequest();
 
-    HandlerThread handlerThread = new HandlerThread(TAG);
+    handlerThread = new HandlerThread(TAG);
     handlerThread.start();
     mServiceHandler = new Handler(handlerThread.getLooper());
     mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -72,33 +78,35 @@ public class LocationUpdatesService extends Service {
           new NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT);
       mNotificationManager.createNotificationChannel(mChannel);
     }
+
+    mRepository = AppApplication.getInstance().getRepository();
   }
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    Log.i(TAG, "Service started");
+    Utils.logd(TAG, "Service started");
     return START_NOT_STICKY;
   }
 
   @Override
   public IBinder onBind(Intent intent) {
-    Log.i(TAG, "in onBind()");
+    Utils.logd(TAG, "in onBind()");
     stopForeground(true);
     return mBinder;
   }
 
   @Override
   public void onRebind(Intent intent) {
-    Log.i(TAG, "in onRebind()");
+    Utils.logd(TAG, "in onRebind()");
     stopForeground(true);
     super.onRebind(intent);
   }
 
   @Override
   public boolean onUnbind(Intent intent) {
-    Log.i(TAG, "Last client unbound from service");
+    Utils.logd(TAG, "Last client unbound from service");
     if (Utils.requestingLocationUpdates(this)) {
-      Log.i(TAG, "Starting foreground service");
+      Utils.logd(TAG, "Starting foreground service");
       startForeground(NOTIFICATION_ID, getNotification());
     }
     return true;
@@ -106,7 +114,8 @@ public class LocationUpdatesService extends Service {
 
   @Override
   public void onDestroy() {
-    mServiceHandler.removeCallbacksAndMessages(null);
+    handlerThread.quitSafely();
+//    mServiceHandler.removeCallbacksAndMessages(null);
   }
 
   private Notification getNotification() {
@@ -132,9 +141,8 @@ public class LocationUpdatesService extends Service {
   }
 
   private void onNewLocation(Location location) {
-    Log.i(TAG, "New location: " + location);
     mLocation = location;
-    Log.d(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude());
+    Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + fitActivityId);
   }
 
   private void createLocationRequest() {
@@ -146,27 +154,29 @@ public class LocationUpdatesService extends Service {
 
 
   public void requestLocationUpdates() {
-    Log.i(TAG, "Requesting location updates");
+    Utils.logd(TAG, "Requesting location updates");
     Utils.setRequestingLocationUpdates(this, true);
+    mServiceHandler.post(() -> fitActivityId = mRepository.getDatabase()
+        .acitivityDao().addActivity(new FitActivity(Calendar.getInstance().getTime())));
     startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
     try {
       mFusedLocationClient.requestLocationUpdates(mLocationRequest,
           mLocationCallback, Looper.myLooper());
     } catch (SecurityException unlikely) {
       Utils.setRequestingLocationUpdates(this, false);
-      Log.e(TAG, "Lost location permission. Could not request updates. " + unlikely);
+      Utils.logd(TAG, "Lost location permission. Could not request updates. " + unlikely);
     }
   }
 
   public void removeLocationUpdates() {
-    Log.i(TAG, "Removing location updates");
+    Utils.logd(TAG, "Removing location updates");
     try {
       Utils.setRequestingLocationUpdates(this, false);
       mFusedLocationClient.removeLocationUpdates(mLocationCallback);
       stopSelf();
     } catch (SecurityException unlikely) {
       Utils.setRequestingLocationUpdates(this, true);
-      Log.e(TAG, "Lost location permission. Could not remove updates. " + unlikely);
+      Utils.logd(TAG, "Lost location permission. Could not remove updates. " + unlikely);
     }
   }
 
