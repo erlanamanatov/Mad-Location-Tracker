@@ -43,7 +43,8 @@ public class LocationUpdatesService extends Service {
   HandlerThread handlerThread;
   private Handler mServiceHandler;
 
-  private long fitActivityId = -1;
+  private FitActivity mCurrentFitActivity;
+  private long mFitActivityId = -1;
   private LocationRequest mLocationRequest;
   private NotificationManager mNotificationManager;
   private FusedLocationProviderClient mFusedLocationClient;
@@ -116,6 +117,7 @@ public class LocationUpdatesService extends Service {
 
   @Override
   public void onDestroy() {
+    Utils.logd(TAG, "Service on destroy");
     handlerThread.quitSafely();
 //    mServiceHandler.removeCallbacksAndMessages(null);
   }
@@ -143,11 +145,15 @@ public class LocationUpdatesService extends Service {
   }
 
   private void onNewLocation(Location location) {
+    if (mLocation != null) {
+      mCurrentFitActivity.addDistance(location.distanceTo(mLocation));
+    }
     mLocation = location;
-    Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + fitActivityId);
-    if (fitActivityId != -1) {
+    Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + mFitActivityId);
+    Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
+    if (mFitActivityId != -1) {
       mServiceHandler.post(() -> mRepository.getDatabase().locationDao()
-          .addLocation(new LocationItem(location, fitActivityId)));
+          .addLocation(new LocationItem(location, mFitActivityId)));
     }
   }
 
@@ -162,8 +168,12 @@ public class LocationUpdatesService extends Service {
   public void requestLocationUpdates() {
     Utils.logd(TAG, "Requesting location updates");
     Utils.setRequestingLocationUpdates(this, true);
-    mServiceHandler.post(() -> fitActivityId = mRepository.getDatabase()
-        .acitivityDao().addActivity(new FitActivity(Calendar.getInstance().getTime())));
+    mServiceHandler.post(() -> {
+      mFitActivityId = mRepository.getDatabase()
+          .acitivityDao().addActivity(new FitActivity());
+      mCurrentFitActivity = new FitActivity(mFitActivityId, Calendar.getInstance().getTime());
+      Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
+    });
     startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
     try {
       mFusedLocationClient.requestLocationUpdates(mLocationRequest,
@@ -179,6 +189,9 @@ public class LocationUpdatesService extends Service {
     try {
       Utils.setRequestingLocationUpdates(this, false);
       mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+      mLocation = null;
+      mFitActivityId = -1;
+      mCurrentFitActivity = null;
       stopSelf();
     } catch (SecurityException unlikely) {
       Utils.setRequestingLocationUpdates(this, true);
