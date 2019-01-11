@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.erkprog.madlocationtracker.R;
+import com.erkprog.madlocationtracker.Utils;
 import com.erkprog.madlocationtracker.data.db.FitActivity;
 
 import java.util.Date;
@@ -16,11 +17,9 @@ import java.util.List;
 public class FitActivityAdapter extends RecyclerView.Adapter<FitActivityAdapter.FitActivityViewHolder> {
   private List<FitActivity> mData;
 
-
-  public FitActivityAdapter(List<FitActivity> data) {
+  FitActivityAdapter(List<FitActivity> data) {
     mData = data;
   }
-
 
   @NonNull
   @Override
@@ -39,9 +38,17 @@ public class FitActivityAdapter extends RecyclerView.Adapter<FitActivityAdapter.
       timeDiff = endTime.getTime() - startTime.getTime();
     }
 
-    viewHolder.tvDate.setText(startTime.toString());
-    viewHolder.tvDistance.setText(String.valueOf(fitActivity.getDistance()));
-    viewHolder.tvTime.setText(String.valueOf(timeDiff));
+    viewHolder.tvDate.setText(
+        startTime != null ? Utils.getFormattedDate(startTime) : ""
+    );
+
+    viewHolder.tvTime.setText(
+        timeDiff != -1 ? Utils.getFormattedTime(timeDiff) : "?"
+    );
+
+    viewHolder.tvDistance.setText(
+        Utils.getFormattedDistance(fitActivity.getDistance())
+    );
   }
 
   @Override
@@ -49,12 +56,12 @@ public class FitActivityAdapter extends RecyclerView.Adapter<FitActivityAdapter.
     return mData.size();
   }
 
-  public class FitActivityViewHolder extends RecyclerView.ViewHolder {
+  class FitActivityViewHolder extends RecyclerView.ViewHolder {
     private TextView tvDate;
     private TextView tvDistance;
     private TextView tvTime;
 
-    public FitActivityViewHolder(@NonNull View itemView) {
+    FitActivityViewHolder(@NonNull View itemView) {
       super(itemView);
       tvDate = itemView.findViewById(R.id.fitact_date);
       tvDistance = itemView.findViewById(R.id.fitact_distance);
