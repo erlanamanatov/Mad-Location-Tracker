@@ -6,6 +6,7 @@
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
+
   <application
       android:name=".AppApplication"
       android:allowBackup="true"
@@ -15,6 +16,9 @@
       android:supportsRtl="true"
       android:theme="@style/AppTheme"
       tools:ignore="GoogleAppIndexingWarning">
+    <uses-library
+        android:name="org.apache.http.legacy"
+        android:required="false"/>
     <activity android:name=".ui.CreateFitActivity">
     </activity>
 
@@ -29,6 +33,14 @@
 
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
+    </activity>
+    <meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="@string/google_maps_key"/>
+
+    <activity
+        android:name=".ui.DetailedFitActivity"
+        android:label="@string/title_activity_detailed_fit">
     </activity>
   </application>
 
