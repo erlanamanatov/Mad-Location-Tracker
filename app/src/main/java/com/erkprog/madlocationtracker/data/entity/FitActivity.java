@@ -1,4 +1,4 @@
-package com.erkprog.madlocationtracker.data.db;
+package com.erkprog.madlocationtracker.data.entity;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;

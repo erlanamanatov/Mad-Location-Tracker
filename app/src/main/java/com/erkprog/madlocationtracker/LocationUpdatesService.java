@@ -15,8 +15,8 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 
-import com.erkprog.madlocationtracker.data.db.FitActivity;
-import com.erkprog.madlocationtracker.data.db.LocationItem;
+import com.erkprog.madlocationtracker.data.entity.FitActivity;
+import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 import com.erkprog.madlocationtracker.ui.CreateFitActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;

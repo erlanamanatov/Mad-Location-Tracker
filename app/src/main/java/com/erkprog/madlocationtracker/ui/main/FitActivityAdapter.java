@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.Utils;
-import com.erkprog.madlocationtracker.data.db.FitActivity;
+import com.erkprog.madlocationtracker.data.entity.FitActivity;
 
 import java.util.Date;
 import java.util.List;
