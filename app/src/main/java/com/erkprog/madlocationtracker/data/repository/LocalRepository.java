@@ -20,4 +20,5 @@ public class LocalRepository {
   public AppDatabase getDatabase() {
     return mDatabase;
   }
+
 }

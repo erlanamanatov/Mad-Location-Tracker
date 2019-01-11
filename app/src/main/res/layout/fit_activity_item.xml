@@ -4,12 +4,13 @@
                                     xmlns:tools="http://schemas.android.com/tools"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:layout_margin="8dp"
                                     app:cardCornerRadius="8dp">
 
   <android.support.constraint.ConstraintLayout
       android:layout_width="match_parent"
-      android:background="@color/fitItemBackground"
-      android:layout_height="wrap_content">
+      android:layout_height="wrap_content"
+      android:background="@color/fitItemBackground">
 
     <TextView
         android:id="@+id/fitact_date"
@@ -39,7 +40,7 @@
           android:layout_height="wrap_content"
           android:layout_marginStart="8dp"
           android:layout_marginTop="8dp"
-          android:text="Distance"
+          android:text="@string/distance"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toTopOf="parent"/>
 
@@ -79,16 +80,15 @@
           android:layout_height="wrap_content"
           android:layout_marginStart="8dp"
           android:layout_marginTop="8dp"
+          android:text="@string/time"
           app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintTop_toTopOf="parent"
-          tools:text="Time"/>
+          app:layout_constraintTop_toTopOf="parent"/>
 
       <TextView
           android:id="@+id/fitact_time"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginTop="8dp"
-          android:text="TextView"
           app:layout_constraintStart_toStartOf="@+id/textViewTime"
           app:layout_constraintTop_toBottomOf="@+id/textViewTime"/>
     </android.support.constraint.ConstraintLayout>
