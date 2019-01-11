@@ -17,8 +17,15 @@ import java.util.List;
 public class FitActivityAdapter extends RecyclerView.Adapter<FitActivityAdapter.FitActivityViewHolder> {
   private List<FitActivity> mData;
 
-  FitActivityAdapter(List<FitActivity> data) {
+  OnFitActivityClickListener mListener;
+
+  interface OnFitActivityClickListener {
+    void onFitActivityClick(FitActivity fitActivity);
+  }
+
+  FitActivityAdapter(List<FitActivity> data, OnFitActivityClickListener listener) {
     mData = data;
+    mListener = listener;
   }
 
   @NonNull
@@ -49,6 +56,10 @@ public class FitActivityAdapter extends RecyclerView.Adapter<FitActivityAdapter.
     viewHolder.tvDistance.setText(
         Utils.getFormattedDistance(fitActivity.getDistance())
     );
+
+    viewHolder.v.setOnClickListener(v -> {
+      mListener.onFitActivityClick(fitActivity);
+    });
   }
 
   @Override
@@ -60,9 +71,11 @@ public class FitActivityAdapter extends RecyclerView.Adapter<FitActivityAdapter.
     private TextView tvDate;
     private TextView tvDistance;
     private TextView tvTime;
+    private View v;
 
     FitActivityViewHolder(@NonNull View itemView) {
       super(itemView);
+      v = itemView;
       tvDate = itemView.findViewById(R.id.fitact_date);
       tvDistance = itemView.findViewById(R.id.fitact_distance);
       tvTime = itemView.findViewById(R.id.fitact_time);

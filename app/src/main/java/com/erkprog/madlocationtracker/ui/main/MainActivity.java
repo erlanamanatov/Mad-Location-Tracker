@@ -13,6 +13,7 @@ import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 import com.erkprog.madlocationtracker.ui.CreateFitActivity;
+import com.erkprog.madlocationtracker.ui.DetailedFitActivity;
 
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         .subscribe(new DisposableMaybeObserver<List<FitActivity>>() {
           @Override
           public void onSuccess(List<FitActivity> fitActivities) {
-            mAdapter = new FitActivityAdapter(fitActivities);
+            mAdapter = new FitActivityAdapter(fitActivities, MainActivity.this::onFClick);
             mRecyclerView.setAdapter(mAdapter);
           }
 
@@ -71,5 +72,10 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "No activities in db", Toast.LENGTH_SHORT).show();
           }
         });
+  }
+
+  private void onFClick(FitActivity fitActivity) {
+    Intent intent = new Intent(this, DetailedFitActivity.class);
+    startActivity(intent);
   }
 }
