@@ -68,4 +68,11 @@ public class LocationItem {
   public void setDate(Date date) {
     this.date = date;
   }
+
+  public Location getLocation() {
+    Location location = new Location("");
+    location.setLatitude(this.latitude);
+    location.setLongitude(this.longitude);
+    return location;
+  }
 }

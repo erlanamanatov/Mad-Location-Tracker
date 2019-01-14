@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         .subscribe(new DisposableMaybeObserver<List<FitActivity>>() {
           @Override
           public void onSuccess(List<FitActivity> fitActivities) {
-            mAdapter = new FitActivityAdapter(fitActivities, MainActivity.this::onFClick);
+            mAdapter = new FitActivityAdapter(fitActivities, MainActivity.this::onFitActivityClicked);
             mRecyclerView.setAdapter(mAdapter);
           }
 
@@ -74,8 +74,9 @@ public class MainActivity extends AppCompatActivity {
         });
   }
 
-  private void onFClick(FitActivity fitActivity) {
+  private void onFitActivityClicked(FitActivity fitActivity) {
     Intent intent = new Intent(this, DetailedFitActivity.class);
+    intent.putExtra("fact", fitActivity);
     startActivity(intent);
   }
 }
