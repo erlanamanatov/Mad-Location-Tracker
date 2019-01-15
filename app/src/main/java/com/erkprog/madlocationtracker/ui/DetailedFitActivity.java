@@ -4,10 +4,12 @@ import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
+import com.erkprog.madlocationtracker.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
@@ -34,6 +36,8 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   private LocalRepository mRepository;
   private FitActivity mFitActivity;
   private List<LocationItem> mLocationItems;
+  private TextView tvDistance;
+  private TextView tvDuration;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -45,12 +49,17 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mapFragment.getMapAsync(this);
     mFitActivity = getIntent().getParcelableExtra("fact");
     Log.d(TAG, "onCreate: " + mFitActivity.toString());
+
+    tvDistance = findViewById(R.id.act_detail_distance);
+    tvDuration = findViewById(R.id.act_detail_duration);
+
+    tvDistance.setText(Utils.getFormattedDistance(mFitActivity.getDistance()));
+    tvDuration.setText(Utils.getFormattedTime(mFitActivity.getEndTime().getTime() - mFitActivity.getStartTime().getTime()));
   }
 
   @Override
   public void onMapReady(GoogleMap googleMap) {
     mMap = googleMap;
-
 
     mRepository.getDatabase().locationDao()
         .getLocationsByActivity(mFitActivity.getId())
