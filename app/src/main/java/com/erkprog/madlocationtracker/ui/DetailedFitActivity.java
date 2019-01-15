@@ -1,5 +1,7 @@
 package com.erkprog.madlocationtracker.ui;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -18,6 +20,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -31,6 +34,9 @@ import io.reactivex.schedulers.Schedulers;
 
 public class DetailedFitActivity extends FragmentActivity implements OnMapReadyCallback {
   private static final String TAG = "DetailedFitActivity";
+
+  private static final String KEY_FIT_ACTIVITY = "detailedFitActivity.fitactivity";
+  private static final int ZOOM = 11;
 
   private GoogleMap mMap;
   private LocalRepository mRepository;
@@ -47,7 +53,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
         .findFragmentById(R.id.map);
     mapFragment.getMapAsync(this);
-    mFitActivity = getIntent().getParcelableExtra("fact");
+    mFitActivity = getIntent().getParcelableExtra(KEY_FIT_ACTIVITY);
     Log.d(TAG, "onCreate: " + mFitActivity.toString());
 
     tvDistance = findViewById(R.id.act_detail_distance);
@@ -60,7 +66,13 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   @Override
   public void onMapReady(GoogleMap googleMap) {
     mMap = googleMap;
+    mMap.getUiSettings().setRotateGesturesEnabled(false);
+    mMap.getUiSettings().setTiltGesturesEnabled(false);
+    mMap.setOnMarkerClickListener(marker -> true);
+    getLocations();
+  }
 
+  private void getLocations() {
     mRepository.getDatabase().locationDao()
         .getLocationsByActivity(mFitActivity.getId())
         .subscribeOn(Schedulers.io())
@@ -68,7 +80,6 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
         .subscribe(new DisposableSingleObserver<List<LocationItem>>() {
           @Override
           public void onSuccess(List<LocationItem> locationItems) {
-            Toast.makeText(DetailedFitActivity.this, "success " + locationItems.size(), Toast.LENGTH_SHORT).show();
             Log.d(TAG, "onSuccess: " + locationItems.size() + " locations in db");
             mLocationItems = locationItems;
             displayLocations();
@@ -79,8 +90,6 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
             Log.d(TAG, "Error getting locations for this activity");
           }
         });
-
-
   }
 
   private void displayLocations() {
@@ -97,7 +106,13 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     LocationItem last = mLocationItems.get(mLocationItems.size() - 1);
     LatLng lastPosition = new LatLng(last.getLatitude(), last.getLongitude());
     mMap.addMarker(new MarkerOptions().position(lastPosition).title("Last location"));
-    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastPosition, 11));
+    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastPosition, ZOOM));
+  }
+
+  public static Intent getIntent(Context context, FitActivity fitActivity) {
+    Intent intent = new Intent(context, DetailedFitActivity.class);
+    intent.putExtra(KEY_FIT_ACTIVITY, fitActivity);
+    return intent;
   }
 }
 

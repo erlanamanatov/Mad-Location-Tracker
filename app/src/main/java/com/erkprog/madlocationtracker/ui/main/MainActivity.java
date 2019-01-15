@@ -43,11 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
     mRecyclerView = findViewById(R.id.rcv_activities);
     mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
     mRepository = AppApplication.getInstance().getRepository();
-
     loadData();
-
   }
 
   private void loadData() {
@@ -75,8 +72,6 @@ public class MainActivity extends AppCompatActivity {
   }
 
   private void onFitActivityClicked(FitActivity fitActivity) {
-    Intent intent = new Intent(this, DetailedFitActivity.class);
-    intent.putExtra("fact", fitActivity);
-    startActivity(intent);
+    startActivity(DetailedFitActivity.getIntent(this, fitActivity));
   }
 }

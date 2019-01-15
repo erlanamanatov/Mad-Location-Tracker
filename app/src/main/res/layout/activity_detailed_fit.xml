@@ -27,7 +27,7 @@
       android:layout_height="wrap_content"
       android:layout_marginBottom="24dp"
       android:layout_marginStart="24dp"
-      android:text="Distance"
+      android:text="@string/distance"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintStart_toStartOf="parent"/>
 
@@ -37,7 +37,7 @@
       android:layout_height="wrap_content"
       android:layout_marginBottom="24dp"
       android:layout_marginEnd="24dp"
-      android:text="Duration"
+      android:text="@string/duration"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -48,6 +48,7 @@
       android:layout_marginBottom="8dp"
       android:layout_marginStart="24dp"
       android:textColor="@android:color/black"
+      android:textSize="18sp"
       android:textStyle="bold"
       app:layout_constraintBottom_toTopOf="@+id/textView"
       app:layout_constraintStart_toStartOf="parent"
@@ -60,6 +61,7 @@
       android:layout_marginBottom="8dp"
       android:layout_marginEnd="24dp"
       android:textColor="@android:color/black"
+      android:textSize="18sp"
       android:textStyle="bold"
       app:layout_constraintBottom_toTopOf="@+id/textView2"
       app:layout_constraintEnd_toEndOf="parent"
