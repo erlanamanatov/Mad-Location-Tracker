@@ -14,6 +14,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
@@ -30,6 +31,12 @@ import java.util.Calendar;
 public class LocationUpdatesService extends Service {
 
   private static final String TAG = LocationUpdatesService.class.getSimpleName();
+
+  private static final String PACKAGE_NAME =
+      "com.erkprog.madlocationtracker.locationupdatesservice";
+  public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
+
+  public static final String EXTRA_FIT_ACTIVITY = PACKAGE_NAME + ".location";
 
   private final IBinder mBinder = new LocalBinder();
 
@@ -156,6 +163,10 @@ public class LocationUpdatesService extends Service {
       mServiceHandler.post(() -> mRepository.getDatabase().locationDao()
           .addLocation(new LocationItem(location, mFitActivityId, Calendar.getInstance().getTime())));
     }
+
+    Intent intent = new Intent(ACTION_BROADCAST);
+    intent.putExtra(EXTRA_FIT_ACTIVITY, mCurrentFitActivity);
+    LocalBroadcastManager.getInstance(AppApplication.getInstance()).sendBroadcast(intent);
   }
 
   private void createLocationRequest() {

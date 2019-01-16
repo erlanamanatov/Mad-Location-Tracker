@@ -1,9 +1,11 @@
 package com.erkprog.madlocationtracker.ui;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -13,9 +15,11 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -23,11 +27,14 @@ import android.widget.Toast;
 import com.erkprog.madlocationtracker.LocationUpdatesService;
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.Utils;
+import com.erkprog.madlocationtracker.data.entity.FitActivity;
 
 public class CreateFitActivity extends AppCompatActivity implements View.OnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
+  private static final String TAG = "CreateFitActivity";
 
   private LocationUpdatesService mService = null;
   private static final int REQUEST_GPS = 1;
+  private FitActivityReceiver mFitActivityReceiver;
 
   private boolean mBound = false;
 
@@ -60,6 +67,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     buttonRequestLocationUpdates.setOnClickListener(this);
     buttonRemoveLocationUpdates = findViewById(R.id.button_remove_locations);
     buttonRemoveLocationUpdates.setOnClickListener(this);
+    mFitActivityReceiver = new FitActivityReceiver();
   }
 
   @Override
@@ -70,6 +78,19 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     setButtonsState(Utils.requestingLocationUpdates(this));
     bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
         Context.BIND_AUTO_CREATE);
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    LocalBroadcastManager.getInstance(this)
+        .registerReceiver(mFitActivityReceiver, new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
+  }
+
+  @Override
+  protected void onPause() {
+    LocalBroadcastManager.getInstance(this).unregisterReceiver(mFitActivityReceiver);
+    super.onPause();
   }
 
   @Override
@@ -153,6 +174,16 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
   public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
     if (key.equals(Utils.KEY_REQUESTING_LOCATION_UPDATES)) {
       setButtonsState(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES, false));
+    }
+  }
+
+  private class FitActivityReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      FitActivity usersActivity = intent.getParcelableExtra(LocationUpdatesService.EXTRA_FIT_ACTIVITY);
+      if (usersActivity != null) {
+        Log.d(TAG, "onReceive: " + usersActivity.toString());
+      }
     }
   }
 }
