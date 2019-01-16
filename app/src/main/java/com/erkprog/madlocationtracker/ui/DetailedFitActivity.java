@@ -7,7 +7,6 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
@@ -19,8 +18,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -35,8 +34,9 @@ import io.reactivex.schedulers.Schedulers;
 public class DetailedFitActivity extends FragmentActivity implements OnMapReadyCallback {
   private static final String TAG = "DetailedFitActivity";
 
-  private static final String KEY_FIT_ACTIVITY = "detailedFitActivity.fitactivity";
+  private static final String KEY_FIT_ACTIVITY = "detailedFitActivity.fitactivjity";
   private static final int ZOOM = 11;
+  private static final float WIDTH_OF_ROUTE = 25;
 
   private GoogleMap mMap;
   private LocalRepository mRepository;
@@ -98,15 +98,26 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
       routePoints.add(new LatLng(item.getLatitude(), item.getLongitude()));
     }
     Polyline route = mMap.addPolyline(new PolylineOptions()
-        .width(24)
+        .width(WIDTH_OF_ROUTE)
         .color(Color.parseColor("#801B60FE"))
         .geodesic(true));
     route.setPoints(routePoints);
 
-    LocationItem last = mLocationItems.get(mLocationItems.size() - 1);
-    LatLng lastPosition = new LatLng(last.getLatitude(), last.getLongitude());
-    mMap.addMarker(new MarkerOptions().position(lastPosition).title("Last location"));
+    displayFirstLocation(mLocationItems.get(0));
+    displayLastLocation(mLocationItems.get(mLocationItems.size() - 1));
+  }
+
+  private void displayLastLocation(LocationItem locationItem) {
+    LatLng lastPosition = new LatLng(locationItem.getLatitude(), locationItem.getLongitude());
+    mMap.addMarker(new MarkerOptions().position(lastPosition).icon(BitmapDescriptorFactory.fromResource(R.drawable.finish_icon)));
     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastPosition, ZOOM));
+  }
+
+  private void displayFirstLocation(LocationItem locationItem) {
+    LatLng firstLocation = new LatLng(locationItem.getLatitude(), locationItem.getLongitude());
+    mMap.addMarker(new MarkerOptions().position(firstLocation)
+        .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_icon))
+        .anchor(0.5f, 0.5f));
   }
 
   public static Intent getIntent(Context context, FitActivity fitActivity) {
