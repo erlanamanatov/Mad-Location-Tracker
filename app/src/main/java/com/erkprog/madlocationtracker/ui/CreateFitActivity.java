@@ -28,13 +28,19 @@ import com.erkprog.madlocationtracker.LocationUpdatesService;
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 
-public class CreateFitActivity extends AppCompatActivity implements View.OnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public class CreateFitActivity extends AppCompatActivity implements View.OnClickListener,
+    SharedPreferences.OnSharedPreferenceChangeListener,
+    OnMapReadyCallback {
   private static final String TAG = "CreateFitActivity";
 
   private LocationUpdatesService mService = null;
   private static final int REQUEST_GPS = 1;
   private FitActivityReceiver mFitActivityReceiver;
+  private GoogleMap mMap;
 
   private boolean mBound = false;
 
@@ -53,12 +59,24 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     }
   };
 
+  @Override
+  public void onMapReady(GoogleMap googleMap) {
+    mMap = googleMap;
+    mMap.getUiSettings().setRotateGesturesEnabled(false);
+    mMap.getUiSettings().setTiltGesturesEnabled(false);
+    mMap.setOnMarkerClickListener(marker -> true);
+  }
+
   Button buttonRequestLocationUpdates, buttonRemoveLocationUpdates;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_create_fit_activity);
+    SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        .findFragmentById(R.id.active_map);
+    mapFragment.getMapAsync(this);
+
     init();
   }
 
@@ -176,6 +194,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
       setButtonsState(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES, false));
     }
   }
+
 
   private class FitActivityReceiver extends BroadcastReceiver {
     @Override
