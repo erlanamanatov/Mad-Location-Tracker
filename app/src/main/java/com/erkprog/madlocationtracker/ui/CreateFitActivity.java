@@ -52,6 +52,8 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     OnMapReadyCallback {
   private static final String TAG = "CreateFitActivity";
 
+  Button buttonRequestLocationUpdates, buttonRemoveLocationUpdates;
+
   private LocationUpdatesService mService = null;
   private static final int REQUEST_GPS = 1;
   private FitActivityReceiver mFitActivityReceiver;
@@ -73,6 +75,10 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
       LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
       mService = binder.getService();
       mBound = true;
+      if (Utils.requestingLocationUpdates(CreateFitActivity.this) && mService.getCurrentLocation() != null && mMap != null) {
+        zoomMapTo(mService.getCurrentLocation());
+        drawPositionMarker(mService.getCurrentLocation());
+      }
     }
 
     @Override
@@ -88,9 +94,9 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     mMap.getUiSettings().setRotateGesturesEnabled(false);
     mMap.getUiSettings().setTiltGesturesEnabled(false);
     mMap.setOnMarkerClickListener(marker -> true);
+    LatLng bishkek = new LatLng(42.88, 74.58);
+    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(bishkek, 10));
   }
-
-  Button buttonRequestLocationUpdates, buttonRemoveLocationUpdates;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -182,11 +188,11 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
 
   private void showTurnGpsOnDialog() {
     AlertDialog.Builder builder = new AlertDialog.Builder(this)
-        .setMessage("Turn on gps in settings")
-        .setTitle("Gps is disabled")
-        .setPositiveButton("To settings", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
-        .setNegativeButton("Cancel", (dialog, which) -> Toast.makeText(CreateFitActivity.this, "Turn GPS on to get location updates", Toast.LENGTH_SHORT)
-            .show());
+        .setMessage(R.string.turn_on_gps)
+        .setTitle(R.string.gps_disabled)
+        .setPositiveButton(R.string.to_settings, (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
+        .setNegativeButton(R.string.cancel, (dialog, which) ->
+            Toast.makeText(CreateFitActivity.this, getString(R.string.turn_on_gps_to_get_updates), Toast.LENGTH_SHORT).show());
     builder.show();
   }
 

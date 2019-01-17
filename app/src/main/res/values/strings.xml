@@ -4,4 +4,9 @@
   <string name="time">Time</string>
   <string name="title_activity_detailed_fit">Activity info</string>
   <string name="duration">Duration</string>
+  <string name="turn_on_gps">Turn on gps in settings</string>
+  <string name="gps_disabled">Gps is disabled</string>
+  <string name="to_settings">To settings</string>
+  <string name="cancel">Cancel</string>
+  <string name="turn_on_gps_to_get_updates">Turn GPS on to get location updates</string>
 </resources>

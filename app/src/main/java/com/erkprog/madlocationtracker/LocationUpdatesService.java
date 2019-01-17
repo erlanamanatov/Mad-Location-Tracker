@@ -42,7 +42,7 @@ public class LocationUpdatesService extends Service {
 
   private final IBinder mBinder = new LocalBinder();
 
-  private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+  private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 7000;
 
   private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
       UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -181,7 +181,6 @@ public class LocationUpdatesService extends Service {
     mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
   }
 
-
   public void requestLocationUpdates() {
     Utils.logd(TAG, "Requesting location updates");
     Utils.setRequestingLocationUpdates(this, true);
@@ -213,6 +212,10 @@ public class LocationUpdatesService extends Service {
       Utils.setRequestingLocationUpdates(this, true);
       Utils.logd(TAG, "Lost location permission. Could not remove updates. " + unlikely);
     }
+  }
+
+  public Location getCurrentLocation() {
+    return mLocation;
   }
 
   private void saveFitActivityToDB() {
