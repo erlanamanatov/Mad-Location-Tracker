@@ -21,9 +21,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.erkprog.madlocationtracker.LocationUpdatesService;
@@ -53,6 +53,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
   private static final String TAG = "CreateFitActivity";
 
   Button buttonRequestLocationUpdates, buttonRemoveLocationUpdates;
+  TextView tvDistance, tvTime;
 
   private LocationUpdatesService mService = null;
   private static final int REQUEST_GPS = 1;
@@ -116,6 +117,8 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     buttonRemoveLocationUpdates.setOnClickListener(this);
     mFitActivityReceiver = new FitActivityReceiver();
     userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
+    tvDistance = findViewById(R.id.cr_act_distance);
+    tvTime = findViewById(R.id.cr_act_time);
   }
 
   @Override
@@ -232,11 +235,11 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
       Location newLocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
 
       if (usersActivity != null && newLocation != null) {
+        tvDistance.setText(Utils.getFormattedDistance(usersActivity.getDistance()));
         drawLocationAccuracyCircle(newLocation);
         drawPositionMarker(newLocation);
         addPolyline(mService.listLocations);
         zoomMapTo(newLocation);
-        Log.d(TAG, "onReceive: " + usersActivity.toString());
       }
     }
   }
