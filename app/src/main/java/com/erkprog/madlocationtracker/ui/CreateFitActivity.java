@@ -30,10 +30,17 @@ import com.erkprog.madlocationtracker.LocationUpdatesService;
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -51,6 +58,9 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
   private GoogleMap mMap;
 
   private Polyline runningPathPolyline;
+  private Circle locationAccuracy;
+  private Marker userPositionMarker;
+  private BitmapDescriptor userPositionIcon;
   private static final int ZOOM = 11;
   private static final float ROUTE_WIDTH = 25;
   private static final String ROUTE_COLOR = "#801B60FE";
@@ -99,6 +109,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     buttonRemoveLocationUpdates = findViewById(R.id.button_remove_locations);
     buttonRemoveLocationUpdates.setOnClickListener(this);
     mFitActivityReceiver = new FitActivityReceiver();
+    userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
   }
 
   @Override
@@ -218,15 +229,47 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
         drawLocationAccuracyCircle(newLocation);
         drawPositionMarker(newLocation);
         addPolyline(mService.listLocations);
+        zoomMapTo(newLocation);
         Log.d(TAG, "onReceive: " + usersActivity.toString());
       }
     }
   }
 
-  private void drawPositionMarker(Location newLocation) {
+  private void drawPositionMarker(Location location) {
+    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+    if (userPositionMarker == null) {
+      userPositionMarker = mMap.addMarker(new MarkerOptions()
+          .position(latLng)
+          .flat(true)
+          .anchor(0.5f, 0.5f)
+          .icon(userPositionIcon));
+    } else {
+      userPositionMarker.setPosition(latLng);
+    }
   }
 
-  private void drawLocationAccuracyCircle(Location newLocation) {
+  private void drawLocationAccuracyCircle(Location location) {
+    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+    if (locationAccuracy == null) {
+      locationAccuracy = mMap.addCircle(new CircleOptions()
+          .center(latLng)
+          .fillColor(Color.argb(64, 0, 100, 100))
+          .strokeColor(Color.argb(64, 0, 0, 0))
+          .strokeWidth(0.0f)
+          .radius(location.getAccuracy()));
+    } else {
+      locationAccuracy.setCenter(latLng);
+      locationAccuracy.setRadius(location.getAccuracy());
+    }
+  }
+
+  private void zoomMapTo(Location location) {
+    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+    try {
+      mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   private void addPolyline(List<Location> locationList) {
