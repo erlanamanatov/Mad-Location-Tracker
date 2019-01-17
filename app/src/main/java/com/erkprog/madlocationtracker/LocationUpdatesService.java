@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class LocationUpdatesService extends Service {
@@ -36,7 +37,8 @@ public class LocationUpdatesService extends Service {
       "com.erkprog.madlocationtracker.locationupdatesservice";
   public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
 
-  public static final String EXTRA_FIT_ACTIVITY = PACKAGE_NAME + ".location";
+  public static final String EXTRA_FIT_ACTIVITY = PACKAGE_NAME + ".fitactivity";
+  public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
 
   private final IBinder mBinder = new LocalBinder();
 
@@ -59,6 +61,7 @@ public class LocationUpdatesService extends Service {
   private LocationCallback mLocationCallback;
   private Location mLocation;
   private LocalRepository mRepository;
+  public ArrayList<Location> listLocations;
 
   public LocationUpdatesService() {
   }
@@ -157,6 +160,7 @@ public class LocationUpdatesService extends Service {
       mCurrentFitActivity.addDistance(location.distanceTo(mLocation));
     }
     mLocation = location;
+    listLocations.add(location);
     Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + mFitActivityId);
     Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
     if (mFitActivityId != -1) {
@@ -166,6 +170,7 @@ public class LocationUpdatesService extends Service {
 
     Intent intent = new Intent(ACTION_BROADCAST);
     intent.putExtra(EXTRA_FIT_ACTIVITY, mCurrentFitActivity);
+    intent.putExtra(EXTRA_LOCATION, location);
     LocalBroadcastManager.getInstance(AppApplication.getInstance()).sendBroadcast(intent);
   }
 
@@ -184,6 +189,7 @@ public class LocationUpdatesService extends Service {
       mFitActivityId = mRepository.getDatabase()
           .acitivityDao().addActivity(new FitActivity());
       mCurrentFitActivity = new FitActivity(mFitActivityId, Calendar.getInstance().getTime());
+      listLocations = new ArrayList<>();
       Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
     });
     startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
@@ -218,6 +224,7 @@ public class LocationUpdatesService extends Service {
       mLocation = null;
       mFitActivityId = -1;
       mCurrentFitActivity = null;
+      listLocations = null;
     });
   }
 

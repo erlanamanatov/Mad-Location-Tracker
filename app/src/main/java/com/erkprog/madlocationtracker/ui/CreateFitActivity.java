@@ -9,6 +9,8 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -31,6 +33,12 @@ import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CreateFitActivity extends AppCompatActivity implements View.OnClickListener,
     SharedPreferences.OnSharedPreferenceChangeListener,
@@ -41,6 +49,11 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
   private static final int REQUEST_GPS = 1;
   private FitActivityReceiver mFitActivityReceiver;
   private GoogleMap mMap;
+
+  private Polyline runningPathPolyline;
+  private static final int ZOOM = 11;
+  private static final float ROUTE_WIDTH = 25;
+  private static final String ROUTE_COLOR = "#801B60FE";
 
   private boolean mBound = false;
 
@@ -195,14 +208,50 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     }
   }
 
-
   private class FitActivityReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
       FitActivity usersActivity = intent.getParcelableExtra(LocationUpdatesService.EXTRA_FIT_ACTIVITY);
-      if (usersActivity != null) {
+      Location newLocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
+
+      if (usersActivity != null && newLocation != null) {
+        drawLocationAccuracyCircle(newLocation);
+        drawPositionMarker(newLocation);
+        addPolyline(mService.listLocations);
         Log.d(TAG, "onReceive: " + usersActivity.toString());
       }
     }
+  }
+
+  private void drawPositionMarker(Location newLocation) {
+  }
+
+  private void drawLocationAccuracyCircle(Location newLocation) {
+  }
+
+  private void addPolyline(List<Location> locationList) {
+    if (runningPathPolyline == null) {
+      if (locationList.size() > 1) {
+        PolylineOptions options = new PolylineOptions()
+            .width(ROUTE_WIDTH).color(Color.parseColor(ROUTE_COLOR)).geodesic(true);
+        options.addAll(getLatLngPoints(locationList));
+        runningPathPolyline = mMap.addPolyline(options);
+      }
+    } else {
+      Location toLocation = locationList.get(locationList.size() - 1);
+      LatLng to = new LatLng(((toLocation.getLatitude())),
+          ((toLocation.getLongitude())));
+      List<LatLng> points = runningPathPolyline.getPoints();
+      points.add(to);
+      runningPathPolyline.setPoints(points);
+    }
+  }
+
+  private List<LatLng> getLatLngPoints(List<Location> locationList) {
+    List<LatLng> points = new ArrayList<>();
+    for (Location location : locationList) {
+      points.add(new LatLng(location.getLatitude(), location.getLongitude()));
+    }
+    return points;
   }
 }
