@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -23,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,6 +56,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
 
   Button buttonRequestLocationUpdates, buttonRemoveLocationUpdates;
   TextView tvDistance, tvTime;
+  Chronometer chronometer;
 
   private LocationUpdatesService mService = null;
   private static final int REQUEST_GPS = 1;
@@ -79,6 +82,12 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
       if (Utils.requestingLocationUpdates(CreateFitActivity.this) && mService.getCurrentLocation() != null && mMap != null) {
         zoomMapTo(mService.getCurrentLocation());
         drawPositionMarker(mService.getCurrentLocation());
+        if (mService.getCurrentFitActivity() != null) {
+          chronometer.setBase(
+              SystemClock.elapsedRealtime() - (System.currentTimeMillis() - mService.getCurrentFitActivity().getStartTime().getTime()));
+          chronometer.start();
+          tvDistance.setText(Utils.getFormattedDistance(mService.getCurrentFitActivity().getDistance()));
+        }
       }
     }
 
@@ -118,7 +127,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     mFitActivityReceiver = new FitActivityReceiver();
     userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
     tvDistance = findViewById(R.id.cr_act_distance);
-    tvTime = findViewById(R.id.cr_act_time);
+    chronometer = findViewById(R.id.cr_act_time);
   }
 
   @Override
@@ -162,6 +171,8 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
         if (isGpsPersmissionGranted()) {
           if (isGpsEnabled()) {
             mService.requestLocationUpdates();
+            chronometer.setBase(SystemClock.elapsedRealtime());
+            chronometer.start();
           } else {
             showTurnGpsOnDialog();
           }
@@ -172,6 +183,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
 
       case R.id.button_remove_locations:
         mService.removeLocationUpdates();
+        chronometer.stop();
         break;
     }
   }

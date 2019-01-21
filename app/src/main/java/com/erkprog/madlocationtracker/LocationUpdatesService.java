@@ -218,6 +218,10 @@ public class LocationUpdatesService extends Service {
     return mLocation;
   }
 
+  public FitActivity getCurrentFitActivity() {
+    return mCurrentFitActivity;
+  }
+
   private void saveFitActivityToDB() {
     mCurrentFitActivity.setEndTime(Calendar.getInstance().getTime());
     mServiceHandler.post(() -> {
