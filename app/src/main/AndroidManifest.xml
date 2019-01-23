@@ -27,6 +27,12 @@
         android:enabled="true"
         android:exported="true"/>
 
+    <service
+        android:name="mad.location.manager.lib.Services.KalmanLocationService"
+        android:enabled="true"
+        android:exported="false"
+        android:stopWithTask="false" />
+
     <activity android:name=".ui.main.MainActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>

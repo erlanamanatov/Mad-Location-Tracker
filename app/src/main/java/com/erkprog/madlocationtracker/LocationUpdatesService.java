@@ -29,7 +29,13 @@ import com.google.android.gms.location.LocationServices;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class LocationUpdatesService extends Service {
+import mad.location.manager.lib.Interfaces.LocationServiceInterface;
+import mad.location.manager.lib.Loggers.GeohashRTFilter;
+import mad.location.manager.lib.Services.KalmanLocationService;
+import mad.location.manager.lib.Services.ServicesHelper;
+
+
+public class LocationUpdatesService extends Service implements LocationServiceInterface {
 
   private static final String TAG = LocationUpdatesService.class.getSimpleName();
 
@@ -50,18 +56,22 @@ public class LocationUpdatesService extends Service {
   private static final String CHANNEL_ID = "channel 1";
   private static final int NOTIFICATION_ID = 123;
 
+
   HandlerThread handlerThread;
   private Handler mServiceHandler;
 
   private FitActivity mCurrentFitActivity;
   private long mFitActivityId = -1;
-  private LocationRequest mLocationRequest;
   private NotificationManager mNotificationManager;
-  private FusedLocationProviderClient mFusedLocationClient;
-  private LocationCallback mLocationCallback;
+//  private LocationRequest mLocationRequest;
+//  private FusedLocationProviderClient mFusedLocationClient;
+//  private LocationCallback mLocationCallback;
   private Location mLocation;
   private LocalRepository mRepository;
   public ArrayList<Location> listLocations;
+
+//  private GeohashRTFilter mGeoHashRTFilter;
+  private KalmanLocationService.Settings settings;
 
   public LocationUpdatesService() {
   }
@@ -69,17 +79,17 @@ public class LocationUpdatesService extends Service {
   @Override
   public void onCreate() {
     Utils.logd(TAG, "Service on create");
-    mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-    mLocationCallback = new LocationCallback() {
-      @Override
-      public void onLocationResult(LocationResult locationResult) {
-        super.onLocationResult(locationResult);
-        onNewLocation(locationResult.getLastLocation());
-      }
-    };
+//    mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+//    mLocationCallback = new LocationCallback() {
+//      @Override
+//      public void onLocationResult(LocationResult locationResult) {
+//        super.onLocationResult(locationResult);
+//        onNewLocation(locationResult.getLastLocation());
+//      }
+//    };
 
-    createLocationRequest();
+//    createLocationRequest();
 
     handlerThread = new HandlerThread(TAG);
     handlerThread.start();
@@ -94,6 +104,21 @@ public class LocationUpdatesService extends Service {
     }
 
     mRepository = AppApplication.getInstance().getRepository();
+
+    ServicesHelper.addLocationServiceInterface(this);
+    settings =
+        new KalmanLocationService.Settings(mad.location.manager.lib.Commons.Utils.ACCELEROMETER_DEFAULT_DEVIATION,
+            mad.location.manager.lib.Commons.Utils.GPS_MIN_DISTANCE,
+            mad.location.manager.lib.Commons.Utils.GPS_MIN_TIME,
+            mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
+            mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT,
+            mad.location.manager.lib.Commons.Utils.SENSOR_DEFAULT_FREQ_HZ,
+            null, false, mad.location.manager.lib.Commons.Utils.DEFAULT_VEL_FACTOR, mad.location.manager.lib.Commons.Utils.DEFAULT_POS_FACTOR);
+
+//    mGeoHashRTFilter = new GeohashRTFilter(
+//        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
+//        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT);
+
   }
 
   @Override
@@ -174,12 +199,12 @@ public class LocationUpdatesService extends Service {
     LocalBroadcastManager.getInstance(AppApplication.getInstance()).sendBroadcast(intent);
   }
 
-  private void createLocationRequest() {
-    mLocationRequest = new LocationRequest();
-    mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-    mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-    mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-  }
+//  private void createLocationRequest() {
+//    mLocationRequest = new LocationRequest();
+//    mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+//    mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+//    mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+//  }
 
   public void requestLocationUpdates() {
     Utils.logd(TAG, "Requesting location updates");
@@ -192,20 +217,38 @@ public class LocationUpdatesService extends Service {
       Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
     });
     startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
-    try {
-      mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-          mLocationCallback, Looper.myLooper());
-    } catch (SecurityException unlikely) {
-      Utils.setRequestingLocationUpdates(this, false);
-      Utils.logd(TAG, "Lost location permission. Could not request updates. " + unlikely);
-    }
+
+//    try {
+//      mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+//          mLocationCallback, Looper.myLooper());
+//    } catch (SecurityException unlikely) {
+//      Utils.setRequestingLocationUpdates(this, false);
+//      Utils.logd(TAG, "Lost location permission. Could not request updates. " + unlikely);
+//    }
+
+    ServicesHelper.getLocationService(this, value -> {
+      if (value.IsRunning()) {
+        return;
+      }
+      value.stop();
+      value.reset(settings); //warning!! here you can adjust your filter behavior
+//      mGeoHashRTFilter.reset(null);
+      value.start();
+    });
+
+
   }
 
   public void removeLocationUpdates() {
     Utils.logd(TAG, "Removing location updates");
     try {
       Utils.setRequestingLocationUpdates(this, false);
-      mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+
+//      mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+
+      ServicesHelper.getLocationService(this, KalmanLocationService::stop);
+//      mGeoHashRTFilter.stop();
+
       saveFitActivityToDB();
       stopSelf();
     } catch (SecurityException unlikely) {
@@ -233,6 +276,11 @@ public class LocationUpdatesService extends Service {
       mCurrentFitActivity = null;
       listLocations = null;
     });
+  }
+
+  @Override
+  public void locationChanged(Location location) {
+    onNewLocation(location);
   }
 
   public class LocalBinder extends Binder {
