@@ -63,7 +63,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   private FitActivity mCurrentFitActivity;
   private long mFitActivityId = -1;
   private NotificationManager mNotificationManager;
-//  private LocationRequest mLocationRequest;
+  //  private LocationRequest mLocationRequest;
 //  private FusedLocationProviderClient mFusedLocationClient;
 //  private LocationCallback mLocationCallback;
   private Location mLocation;
@@ -71,7 +71,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public ArrayList<Location> listLocations;
 
 //  private GeohashRTFilter mGeoHashRTFilter;
-  private KalmanLocationService.Settings settings;
+//  private KalmanLocationService.Settings settings;
 
   public LocationUpdatesService() {
   }
@@ -106,14 +106,15 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     mRepository = AppApplication.getInstance().getRepository();
 
     ServicesHelper.addLocationServiceInterface(this);
-    settings =
-        new KalmanLocationService.Settings(mad.location.manager.lib.Commons.Utils.ACCELEROMETER_DEFAULT_DEVIATION,
-            mad.location.manager.lib.Commons.Utils.GPS_MIN_DISTANCE,
-            mad.location.manager.lib.Commons.Utils.GPS_MIN_TIME,
-            mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
-            mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT,
-            mad.location.manager.lib.Commons.Utils.SENSOR_DEFAULT_FREQ_HZ,
-            null, false, mad.location.manager.lib.Commons.Utils.DEFAULT_VEL_FACTOR, mad.location.manager.lib.Commons.Utils.DEFAULT_POS_FACTOR);
+
+//    settings =
+//        new KalmanLocationService.Settings(mad.location.manager.lib.Commons.Utils.ACCELEROMETER_DEFAULT_DEVIATION,
+//            mad.location.manager.lib.Commons.Utils.GPS_MIN_DISTANCE,
+//            mad.location.manager.lib.Commons.Utils.GPS_MIN_TIME,
+//            mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
+//            mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT,
+//            mad.location.manager.lib.Commons.Utils.SENSOR_DEFAULT_FREQ_HZ,
+//            null, false, mad.location.manager.lib.Commons.Utils.DEFAULT_VEL_FACTOR, mad.location.manager.lib.Commons.Utils.DEFAULT_POS_FACTOR);
 
 //    mGeoHashRTFilter = new GeohashRTFilter(
 //        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
@@ -226,16 +227,19 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 //      Utils.logd(TAG, "Lost location permission. Could not request updates. " + unlikely);
 //    }
 
+    getLocations(KalmanFilterSettings.getForegroundSettings());
+  }
+
+  private void getLocations(KalmanLocationService.Settings settings) {
     ServicesHelper.getLocationService(this, value -> {
       if (value.IsRunning()) {
         return;
       }
       value.stop();
-      value.reset(settings); //warning!! here you can adjust your filter behavior
+      value.reset(settings);
 //      mGeoHashRTFilter.reset(null);
       value.start();
     });
-
 
   }
 
