@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
@@ -20,17 +21,12 @@ import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 import com.erkprog.madlocationtracker.ui.CreateFitActivity;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
+
 
 import java.util.ArrayList;
 import java.util.Calendar;
 
 import mad.location.manager.lib.Interfaces.LocationServiceInterface;
-import mad.location.manager.lib.Loggers.GeohashRTFilter;
 import mad.location.manager.lib.Services.KalmanLocationService;
 import mad.location.manager.lib.Services.ServicesHelper;
 
@@ -48,14 +44,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   private final IBinder mBinder = new LocalBinder();
 
-  private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 7000;
-
-  private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-      UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-
   private static final String CHANNEL_ID = "channel 1";
   private static final int NOTIFICATION_ID = 123;
-
+  private boolean mChangingConfiguration = false;
 
   HandlerThread handlerThread;
   private Handler mServiceHandler;
@@ -63,15 +54,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   private FitActivity mCurrentFitActivity;
   private long mFitActivityId = -1;
   private NotificationManager mNotificationManager;
-  //  private LocationRequest mLocationRequest;
-//  private FusedLocationProviderClient mFusedLocationClient;
-//  private LocationCallback mLocationCallback;
   private Location mLocation;
   private LocalRepository mRepository;
   public ArrayList<Location> listLocations;
-
-//  private GeohashRTFilter mGeoHashRTFilter;
-//  private KalmanLocationService.Settings settings;
 
   public LocationUpdatesService() {
   }
@@ -79,17 +64,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   @Override
   public void onCreate() {
     Utils.logd(TAG, "Service on create");
-
-//    mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-//    mLocationCallback = new LocationCallback() {
-//      @Override
-//      public void onLocationResult(LocationResult locationResult) {
-//        super.onLocationResult(locationResult);
-//        onNewLocation(locationResult.getLastLocation());
-//      }
-//    };
-
-//    createLocationRequest();
 
     handlerThread = new HandlerThread(TAG);
     handlerThread.start();
@@ -107,19 +81,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
     ServicesHelper.addLocationServiceInterface(this);
 
-//    settings =
-//        new KalmanLocationService.Settings(mad.location.manager.lib.Commons.Utils.ACCELEROMETER_DEFAULT_DEVIATION,
-//            mad.location.manager.lib.Commons.Utils.GPS_MIN_DISTANCE,
-//            mad.location.manager.lib.Commons.Utils.GPS_MIN_TIME,
-//            mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
-//            mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT,
-//            mad.location.manager.lib.Commons.Utils.SENSOR_DEFAULT_FREQ_HZ,
-//            null, false, mad.location.manager.lib.Commons.Utils.DEFAULT_VEL_FACTOR, mad.location.manager.lib.Commons.Utils.DEFAULT_POS_FACTOR);
-
-//    mGeoHashRTFilter = new GeohashRTFilter(
-//        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
-//        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT);
-
   }
 
   @Override
@@ -129,9 +90,16 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    mChangingConfiguration = true;
+  }
+
+  @Override
   public IBinder onBind(Intent intent) {
     Utils.logd(TAG, "in onBind()");
     stopForeground(true);
+    mChangingConfiguration = false;
     return mBinder;
   }
 
@@ -139,24 +107,119 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public void onRebind(Intent intent) {
     Utils.logd(TAG, "in onRebind()");
     stopForeground(true);
+    mChangingConfiguration = false;
     super.onRebind(intent);
   }
 
   @Override
   public boolean onUnbind(Intent intent) {
     Utils.logd(TAG, "Last client unbound from service");
-    if (Utils.requestingLocationUpdates(this)) {
+    if (!mChangingConfiguration && Utils.requestingLocationUpdates(this)) {
       Utils.logd(TAG, "Starting foreground service");
+
+//      ServicesHelper.getLocationService(this, value -> {
+//        if (value.IsRunning()) {
+//          Utils.logd(TAG, "Value is running");
+//          return;
+//        }
+//        Utils.logd(TAG, "Value is not running");
+//        value.reset(KalmanFilterSettings.getBackgroundSettings());
+//        value.start();
+//      });
+
+//      ServicesHelper.getLocationService(this, kalmanLocationService -> {
+//        kalmanLocationService.stop();
+//        getLocations(KalmanFilterSettings.getBackgroundSettings());
+//      });
+//      getLocations(KalmanFilterSettings.getBackgroundSettings());
+
       startForeground(NOTIFICATION_ID, getNotification());
     }
     return true;
   }
 
-  @Override
-  public void onDestroy() {
-    Utils.logd(TAG, "Service on destroy");
-    handlerThread.quitSafely();
-//    mServiceHandler.removeCallbacksAndMessages(null);
+  private void onNewLocation(Location location) {
+    if (mLocation != null) {
+      mCurrentFitActivity.addDistance(location.distanceTo(mLocation));
+    }
+    mLocation = location;
+    listLocations.add(location);
+    Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + mFitActivityId);
+    Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
+    if (mFitActivityId != -1) {
+      mServiceHandler.post(() -> mRepository.saveLocation(new LocationItem(location, mFitActivityId, Calendar.getInstance().getTime())));
+//          mRepository.getDatabase().locationDao()
+//          .addLocation(new LocationItem(location, mFitActivityId, Calendar.getInstance().getTime())));
+    }
+
+    Intent intent = new Intent(ACTION_BROADCAST);
+    intent.putExtra(EXTRA_FIT_ACTIVITY, mCurrentFitActivity);
+    intent.putExtra(EXTRA_LOCATION, location);
+    LocalBroadcastManager.getInstance(AppApplication.getInstance()).sendBroadcast(intent);
+  }
+
+  public void requestLocationUpdates() {
+    listLocations = new ArrayList<>();
+    Utils.logd(TAG, "Requesting location updates");
+    Utils.setRequestingLocationUpdates(this, true);
+    mServiceHandler.post(() -> {
+      mFitActivityId = mRepository.addActivity(new FitActivity());
+//      mFitActivityId = mRepository.getDatabase()
+//          .acitivityDao().addActivity(new FitActivity());
+      mCurrentFitActivity = new FitActivity(mFitActivityId, Calendar.getInstance().getTime());
+      Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
+    });
+    startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
+
+    getLocations(KalmanFilterSettings.getForegroundSettings());
+  }
+
+  private void getLocations(KalmanLocationService.Settings settings) {
+    ServicesHelper.getLocationService(this, value -> {
+      if (value.IsRunning()) {
+        Utils.logd(TAG, "Value is running");
+        return;
+      }
+      Utils.logd(TAG, "Value is not running");
+      value.stop();
+      value.reset(settings);
+      value.start();
+    });
+  }
+
+  public void removeLocationUpdates() {
+    Utils.logd(TAG, "Removing location updates");
+    try {
+      Utils.setRequestingLocationUpdates(this, false);
+      ServicesHelper.getLocationService(this, KalmanLocationService::stop);
+      saveFitActivityToDB();
+      stopSelf();
+    } catch (SecurityException unlikely) {
+      Utils.setRequestingLocationUpdates(this, true);
+      Utils.logd(TAG, "Lost location permission. Could not remove updates. " + unlikely);
+    }
+  }
+
+  public Location getCurrentLocation() {
+    return mLocation;
+  }
+
+  public FitActivity getCurrentFitActivity() {
+    return mCurrentFitActivity;
+  }
+
+  private void saveFitActivityToDB() {
+    mCurrentFitActivity.setEndTime(Calendar.getInstance().getTime());
+    mServiceHandler.post(() -> {
+      mRepository.updateActivity(mCurrentFitActivity);
+//      mRepository.getDatabase().acitivityDao()
+//          .updateActivity(mCurrentFitActivity);
+      Utils.logd(TAG, "User's activity saved to DB: " + mCurrentFitActivity.toString());
+      mLocation = null;
+      mFitActivityId = -1;
+      mCurrentFitActivity = null;
+      listLocations = null;
+    });
   }
 
   private Notification getNotification() {
@@ -181,110 +244,16 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     return builder.build();
   }
 
-  private void onNewLocation(Location location) {
-    if (mLocation != null) {
-      mCurrentFitActivity.addDistance(location.distanceTo(mLocation));
-    }
-    mLocation = location;
-    listLocations.add(location);
-    Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + mFitActivityId);
-    Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
-    if (mFitActivityId != -1) {
-      mServiceHandler.post(() -> mRepository.getDatabase().locationDao()
-          .addLocation(new LocationItem(location, mFitActivityId, Calendar.getInstance().getTime())));
-    }
-
-    Intent intent = new Intent(ACTION_BROADCAST);
-    intent.putExtra(EXTRA_FIT_ACTIVITY, mCurrentFitActivity);
-    intent.putExtra(EXTRA_LOCATION, location);
-    LocalBroadcastManager.getInstance(AppApplication.getInstance()).sendBroadcast(intent);
-  }
-
-//  private void createLocationRequest() {
-//    mLocationRequest = new LocationRequest();
-//    mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-//    mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-//    mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-//  }
-
-  public void requestLocationUpdates() {
-    Utils.logd(TAG, "Requesting location updates");
-    Utils.setRequestingLocationUpdates(this, true);
-    mServiceHandler.post(() -> {
-      mFitActivityId = mRepository.getDatabase()
-          .acitivityDao().addActivity(new FitActivity());
-      mCurrentFitActivity = new FitActivity(mFitActivityId, Calendar.getInstance().getTime());
-      listLocations = new ArrayList<>();
-      Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
-    });
-    startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
-
-//    try {
-//      mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-//          mLocationCallback, Looper.myLooper());
-//    } catch (SecurityException unlikely) {
-//      Utils.setRequestingLocationUpdates(this, false);
-//      Utils.logd(TAG, "Lost location permission. Could not request updates. " + unlikely);
-//    }
-
-    getLocations(KalmanFilterSettings.getForegroundSettings());
-  }
-
-  private void getLocations(KalmanLocationService.Settings settings) {
-    ServicesHelper.getLocationService(this, value -> {
-      if (value.IsRunning()) {
-        return;
-      }
-      value.stop();
-      value.reset(settings);
-//      mGeoHashRTFilter.reset(null);
-      value.start();
-    });
-
-  }
-
-  public void removeLocationUpdates() {
-    Utils.logd(TAG, "Removing location updates");
-    try {
-      Utils.setRequestingLocationUpdates(this, false);
-
-//      mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-
-      ServicesHelper.getLocationService(this, KalmanLocationService::stop);
-//      mGeoHashRTFilter.stop();
-
-      saveFitActivityToDB();
-      stopSelf();
-    } catch (SecurityException unlikely) {
-      Utils.setRequestingLocationUpdates(this, true);
-      Utils.logd(TAG, "Lost location permission. Could not remove updates. " + unlikely);
-    }
-  }
-
-  public Location getCurrentLocation() {
-    return mLocation;
-  }
-
-  public FitActivity getCurrentFitActivity() {
-    return mCurrentFitActivity;
-  }
-
-  private void saveFitActivityToDB() {
-    mCurrentFitActivity.setEndTime(Calendar.getInstance().getTime());
-    mServiceHandler.post(() -> {
-      mRepository.getDatabase().acitivityDao()
-          .updateActivity(mCurrentFitActivity);
-      Utils.logd(TAG, "Save activity to DB: " + mCurrentFitActivity.toString());
-      mLocation = null;
-      mFitActivityId = -1;
-      mCurrentFitActivity = null;
-      listLocations = null;
-    });
-  }
-
   @Override
   public void locationChanged(Location location) {
     onNewLocation(location);
+  }
+
+  @Override
+  public void onDestroy() {
+    Utils.logd(TAG, "Service on destroy");
+    handlerThread.quitSafely();
+//    mServiceHandler.removeCallbacksAndMessages(null);
   }
 
   public class LocalBinder extends Binder {

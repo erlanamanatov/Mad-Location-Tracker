@@ -4,6 +4,8 @@ import android.arch.persistence.room.Room;
 import android.content.Context;
 
 import com.erkprog.madlocationtracker.data.db.AppDatabase;
+import com.erkprog.madlocationtracker.data.entity.FitActivity;
+import com.erkprog.madlocationtracker.data.entity.LocationItem;
 
 public class LocalRepository {
 
@@ -19,6 +21,18 @@ public class LocalRepository {
 
   public AppDatabase getDatabase() {
     return mDatabase;
+  }
+
+  public void saveLocation(LocationItem location) {
+    mDatabase.locationDao().addLocation(location);
+  }
+
+  public long addActivity(FitActivity fitActivity) {
+    return mDatabase.acitivityDao().addActivity(fitActivity);
+  }
+
+  public void updateActivity(FitActivity fitActivity) {
+    mDatabase.acitivityDao().updateActivity(fitActivity);
   }
 
 }
