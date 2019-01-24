@@ -107,6 +107,10 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public void onRebind(Intent intent) {
     Utils.logd(TAG, "in onRebind()");
     stopForeground(true);
+    if (!mChangingConfiguration && Utils.requestingLocationUpdates(this)) {
+      Utils.logd(TAG, " changing KalmanFilter parameters to ForegroundSettings");
+      getLocations(KalmanFilterSettings.getForegroundSettings());
+    }
     mChangingConfiguration = false;
     super.onRebind(intent);
   }
@@ -115,13 +119,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public boolean onUnbind(Intent intent) {
     Utils.logd(TAG, "Last client unbound from service");
     if (!mChangingConfiguration && Utils.requestingLocationUpdates(this)) {
+      Utils.logd(TAG, " changing KalmanFilter parameters to BackgroundSettings");
+      getLocations(KalmanFilterSettings.getBackgroundSettings());
       Utils.logd(TAG, "Starting foreground service");
-      ServicesHelper.getLocationService(this, value -> {
-        value.stop();
-        value.reset(KalmanFilterSettings.getBackgroundSettings());
-        value.start();
-      });
-
       startForeground(NOTIFICATION_ID, getNotification());
     }
     return true;
