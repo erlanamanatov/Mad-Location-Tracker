@@ -116,22 +116,11 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     Utils.logd(TAG, "Last client unbound from service");
     if (!mChangingConfiguration && Utils.requestingLocationUpdates(this)) {
       Utils.logd(TAG, "Starting foreground service");
-
-//      ServicesHelper.getLocationService(this, value -> {
-//        if (value.IsRunning()) {
-//          Utils.logd(TAG, "Value is running");
-//          return;
-//        }
-//        Utils.logd(TAG, "Value is not running");
-//        value.reset(KalmanFilterSettings.getBackgroundSettings());
-//        value.start();
-//      });
-
-//      ServicesHelper.getLocationService(this, kalmanLocationService -> {
-//        kalmanLocationService.stop();
-//        getLocations(KalmanFilterSettings.getBackgroundSettings());
-//      });
-//      getLocations(KalmanFilterSettings.getBackgroundSettings());
+      ServicesHelper.getLocationService(this, value -> {
+        value.stop();
+        value.reset(KalmanFilterSettings.getBackgroundSettings());
+        value.start();
+      });
 
       startForeground(NOTIFICATION_ID, getNotification());
     }
@@ -148,8 +137,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
     if (mFitActivityId != -1) {
       mServiceHandler.post(() -> mRepository.saveLocation(new LocationItem(location, mFitActivityId, Calendar.getInstance().getTime())));
-//          mRepository.getDatabase().locationDao()
-//          .addLocation(new LocationItem(location, mFitActivityId, Calendar.getInstance().getTime())));
     }
 
     Intent intent = new Intent(ACTION_BROADCAST);
@@ -164,8 +151,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     Utils.setRequestingLocationUpdates(this, true);
     mServiceHandler.post(() -> {
       mFitActivityId = mRepository.addActivity(new FitActivity());
-//      mFitActivityId = mRepository.getDatabase()
-//          .acitivityDao().addActivity(new FitActivity());
       mCurrentFitActivity = new FitActivity(mFitActivityId, Calendar.getInstance().getTime());
       Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
     });
@@ -212,8 +197,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     mCurrentFitActivity.setEndTime(Calendar.getInstance().getTime());
     mServiceHandler.post(() -> {
       mRepository.updateActivity(mCurrentFitActivity);
-//      mRepository.getDatabase().acitivityDao()
-//          .updateActivity(mCurrentFitActivity);
       Utils.logd(TAG, "User's activity saved to DB: " + mCurrentFitActivity.toString());
       mLocation = null;
       mFitActivityId = -1;

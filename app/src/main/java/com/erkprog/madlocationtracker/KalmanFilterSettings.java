@@ -5,7 +5,7 @@ import mad.location.manager.lib.Services.KalmanLocationService;
 public class KalmanFilterSettings {
   private static final int FOREGROUND_GPS_MIN_DISTANCE = 0;
   private static final int FOREGROUND_GPS_MIN_TIME = 1800;
-  private static final int BACKGROUND_GPS_MIN_DISTANCE = 8;
+  private static final int BACKGROUND_GPS_MIN_DISTANCE = 5;
   private static final int BACKGROUND_GPS_MIN_TIME = 4000;
 
 

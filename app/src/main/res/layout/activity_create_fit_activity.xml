@@ -62,7 +62,8 @@
       android:textSize="18sp"
       android:textStyle="bold"
       app:layout_constraintBottom_toTopOf="@+id/textView3"
-      app:layout_constraintStart_toStartOf="parent"/>
+      app:layout_constraintStart_toStartOf="parent"
+      tools:text="21.23 km"/>
 
   <Chronometer
       android:id="@+id/cr_act_time"
