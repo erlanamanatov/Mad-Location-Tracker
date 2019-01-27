@@ -13,7 +13,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 
@@ -100,6 +99,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     Utils.logd(TAG, "in onBind()");
     stopForeground(true);
     mChangingConfiguration = false;
+    getLocations(KalmanFilterSettings.getForegroundSettings());
     return mBinder;
   }
 
@@ -118,7 +118,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   @Override
   public boolean onUnbind(Intent intent) {
     Utils.logd(TAG, "Last client unbound from service");
-    if (!mChangingConfiguration && Utils.requestingLocationUpdates(this)) {
+    if (!Utils.requestingLocationUpdates(this)) {
+      ServicesHelper.getLocationService(this, KalmanLocationService::stop);
+    } else if (!mChangingConfiguration && Utils.requestingLocationUpdates(this)) {
       Utils.logd(TAG, " changing KalmanFilter parameters to BackgroundSettings");
       getLocations(KalmanFilterSettings.getBackgroundSettings());
       Utils.logd(TAG, "Starting foreground service");
@@ -139,13 +141,19 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       mServiceHandler.post(() -> mRepository.saveLocation(new LocationItem(location, mFitActivityId, Calendar.getInstance().getTime())));
     }
 
+    sendBroadcast(mCurrentFitActivity, location);
+  }
+
+  private void sendBroadcast(FitActivity fitActivity, Location location) {
+    // send null fitActivity if user has not started tracking new activity
     Intent intent = new Intent(ACTION_BROADCAST);
-    intent.putExtra(EXTRA_FIT_ACTIVITY, mCurrentFitActivity);
+    intent.putExtra(EXTRA_FIT_ACTIVITY, fitActivity);
     intent.putExtra(EXTRA_LOCATION, location);
     LocalBroadcastManager.getInstance(AppApplication.getInstance()).sendBroadcast(intent);
   }
 
   public void requestLocationUpdates() {
+    startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
     listLocations = new ArrayList<>();
     Utils.logd(TAG, "Requesting location updates");
     Utils.setRequestingLocationUpdates(this, true);
@@ -154,7 +162,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       mCurrentFitActivity = new FitActivity(mFitActivityId, Calendar.getInstance().getTime());
       Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
     });
-    startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
 
     getLocations(KalmanFilterSettings.getForegroundSettings());
   }
@@ -221,7 +228,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
         .setTicker(text)
         .setWhen(System.currentTimeMillis());
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      builder.setChannelId(CHANNEL_ID); // Channel ID
+      builder.setChannelId(CHANNEL_ID);
     }
 
     return builder.build();
@@ -229,14 +236,21 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   @Override
   public void locationChanged(Location location) {
-    onNewLocation(location);
+    Utils.loge(TAG, "locationChanged Triggered");
+    if (Utils.requestingLocationUpdates(this)) {
+      // tracking user's activity
+      onNewLocation(location);
+    } else {
+      // display current position, the user has not started activity yet
+      sendBroadcast(null, location);
+    }
   }
 
   @Override
   public void onDestroy() {
     Utils.logd(TAG, "Service on destroy");
     handlerThread.quitSafely();
-//    mServiceHandler.removeCallbacksAndMessages(null);
+    ServicesHelper.removeLocationServiceInterface(this);
   }
 
   public class LocalBinder extends Binder {

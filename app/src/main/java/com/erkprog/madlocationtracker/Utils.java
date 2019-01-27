@@ -43,6 +43,10 @@ public class Utils {
     Log.d(tag, String.format("%s [%s]", message, Thread.currentThread().getName()));
   }
 
+  public static void loge(String tag, String message) {
+    Log.e(tag, String.format("%s [%s]", message, Thread.currentThread().getName()));
+  }
+
   @SuppressLint("DefaultLocale")
   public static String getFormattedDistance(float distance) {
     String unit = "";

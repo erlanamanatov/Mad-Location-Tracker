@@ -240,22 +240,6 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     }
   }
 
-  private class FitActivityReceiver extends BroadcastReceiver {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-      FitActivity usersActivity = intent.getParcelableExtra(LocationUpdatesService.EXTRA_FIT_ACTIVITY);
-      Location newLocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
-
-      if (usersActivity != null && newLocation != null) {
-        tvDistance.setText(Utils.getFormattedDistance(usersActivity.getDistance()));
-        drawLocationAccuracyCircle(newLocation);
-        drawPositionMarker(newLocation);
-        addPolyline(mService.listLocations);
-        zoomMapTo(newLocation);
-      }
-    }
-  }
-
   private void drawPositionMarker(Location location) {
     LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
     if (userPositionMarker == null) {
@@ -317,5 +301,30 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
       points.add(new LatLng(location.getLatitude(), location.getLongitude()));
     }
     return points;
+  }
+
+  private class FitActivityReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      FitActivity usersActivity = intent.getParcelableExtra(LocationUpdatesService.EXTRA_FIT_ACTIVITY);
+      Location newLocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
+
+      // the user has not started tracking new activity yet
+      if (usersActivity == null && newLocation != null) {
+        drawPositionMarker(newLocation);
+        zoomMapTo(newLocation);
+      }
+
+      // Tracking user's activity
+      if (usersActivity != null && newLocation != null) {
+        tvDistance.setText(Utils.getFormattedDistance(usersActivity.getDistance()));
+        drawLocationAccuracyCircle(newLocation);
+        drawPositionMarker(newLocation);
+        if (mService.listLocations != null) {
+          addPolyline(mService.listLocations);
+        }
+        zoomMapTo(newLocation);
+      }
+    }
   }
 }
