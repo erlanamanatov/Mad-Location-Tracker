@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import mad.location.manager.lib.Interfaces.LocationServiceInterface;
+import mad.location.manager.lib.Loggers.GeohashRTFilter;
 import mad.location.manager.lib.Services.KalmanLocationService;
 import mad.location.manager.lib.Services.ServicesHelper;
 
@@ -49,6 +50,8 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   HandlerThread handlerThread;
   private Handler mServiceHandler;
+
+  private GeohashRTFilter mGeohashRTFilter;
 
   private FitActivity mCurrentFitActivity;
   private long mFitActivityId = -1;
@@ -155,6 +158,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public void requestLocationUpdates() {
     startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
     listLocations = new ArrayList<>();
+    resetGeohashFilter();
     Utils.logd(TAG, "Requesting location updates");
     Utils.setRequestingLocationUpdates(this, true);
     mServiceHandler.post(() -> {
@@ -179,12 +183,24 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     });
   }
 
+  private void resetGeohashFilter() {
+    mGeohashRTFilter = new GeohashRTFilter(mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
+        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT);
+    mGeohashRTFilter.stop();
+    mGeohashRTFilter.reset(null);
+  }
+
   public void removeLocationUpdates() {
     Utils.logd(TAG, "Removing location updates");
     try {
       Utils.setRequestingLocationUpdates(this, false);
       ServicesHelper.getLocationService(this, KalmanLocationService::stop);
       saveFitActivityToDB();
+      Utils.logd(TAG, " Remove location updates, distanceAsIs " + mGeohashRTFilter.getDistanceAsIs());
+      Utils.logd(TAG, " Remove location updates, distanceAsIsHp " + mGeohashRTFilter.getDistanceAsIsHP());
+      Utils.logd(TAG, " Remove location updates, distanceGeoFiltered " + mGeohashRTFilter.getDistanceGeoFiltered());
+      Utils.logd(TAG, " Remove location updates, distanceGeoFilteredHp " + mGeohashRTFilter.getDistanceGeoFilteredHP());
+      Utils.logd(TAG, " Remove location upgates, size of filtered locations list: " + Integer.toString(mGeohashRTFilter.getGeoFilteredTrack().size()));
       stopSelf();
     } catch (SecurityException unlikely) {
       Utils.setRequestingLocationUpdates(this, true);
@@ -208,7 +224,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       mLocation = null;
       mFitActivityId = -1;
       mCurrentFitActivity = null;
-      listLocations = null;
+      listLocations.clear();
     });
   }
 
@@ -240,6 +256,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     if (Utils.requestingLocationUpdates(this)) {
       // tracking user's activity
       onNewLocation(location);
+      mGeohashRTFilter.filter(location);
     } else {
       // display current position, the user has not started activity yet
       sendBroadcast(null, location);
