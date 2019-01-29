@@ -6,6 +6,7 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.PrimaryKey;
 import android.location.Location;
 
+import java.util.Calendar;
 import java.util.Date;
 
 @Entity(tableName = "locations",
@@ -13,6 +14,11 @@ import java.util.Date;
         parentColumns = "id",
         childColumns = "activity_id"))
 public class LocationItem {
+
+  // locations only kalman filtered
+  public static final String TAG_KALMAN_FILTERED = "kalman_filtered";
+  // locations kalman and geo filtered
+  public static final String TAG_GEO_FILTERED = "geo_filtered";
 
   @PrimaryKey(autoGenerate = true)
   public long id;
@@ -26,6 +32,8 @@ public class LocationItem {
 
   private Date date;
 
+  private String tag;
+
   public LocationItem() {
 
   }
@@ -35,6 +43,15 @@ public class LocationItem {
     longitude = location.getLongitude();
     this.fitActivityId = fitActivityId;
     this.date = date;
+    this.tag = TAG_KALMAN_FILTERED;
+  }
+
+  public LocationItem(Location location, long fitActivityId, String tag) {
+    latitude = location.getLatitude();
+    longitude = location.getLongitude();
+    this.fitActivityId = fitActivityId;
+    this.date = Calendar.getInstance().getTime();
+    this.tag = tag;
   }
 
   public double getLatitude() {
@@ -67,6 +84,14 @@ public class LocationItem {
 
   public void setDate(Date date) {
     this.date = date;
+  }
+
+  public String getTag() {
+    return tag;
+  }
+
+  public void setTag(String tag) {
+    this.tag = tag;
   }
 
   public Location getLocation() {

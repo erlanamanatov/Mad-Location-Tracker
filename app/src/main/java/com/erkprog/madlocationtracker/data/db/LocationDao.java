@@ -17,6 +17,9 @@ public interface LocationDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   void addLocation(LocationItem location);
 
-  @Query("Select * from locations where activity_id = :activityId")
-  Single<List<LocationItem>> getLocationsByActivity(long activityId);
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  void addLocations(List<LocationItem> locations);
+
+  @Query("Select * from locations where activity_id = :activityId and tag = :tag")
+  Single<List<LocationItem>> getLocationsByActivity(long activityId, String tag);
 }
