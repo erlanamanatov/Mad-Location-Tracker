@@ -74,7 +74,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
 
   private void getLocations() {
     mRepository.getDatabase().locationDao()
-        .getLocationsByActivity(mFitActivity.getId())
+        .getLocationsByActivity(mFitActivity.getId(), LocationItem.TAG_KALMAN_FILTERED)
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new DisposableSingleObserver<List<LocationItem>>() {

@@ -2,10 +2,14 @@ package com.erkprog.madlocationtracker.data.repository;
 
 import android.arch.persistence.room.Room;
 import android.content.Context;
+import android.location.Location;
 
 import com.erkprog.madlocationtracker.data.db.AppDatabase;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class LocalRepository {
 
@@ -35,4 +39,16 @@ public class LocalRepository {
     mDatabase.acitivityDao().updateActivity(fitActivity);
   }
 
+  public void saveGeoFilteredTrack(long fitActivityId, List<Location> geoFilteredTrack) {
+    List<LocationItem> formattedList = getFormattedLocations(fitActivityId, geoFilteredTrack);
+    mDatabase.locationDao().addLocations(formattedList);
+  }
+
+  private List<LocationItem> getFormattedLocations(long fitActivityId, List<Location> geoFilteredTrack) {
+    List<LocationItem> list = new ArrayList<>();
+    for (Location loc : geoFilteredTrack) {
+      list.add(new LocationItem(loc, fitActivityId, LocationItem.TAG_GEO_FILTERED));
+    }
+    return list;
+  }
 }

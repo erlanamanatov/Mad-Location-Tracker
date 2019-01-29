@@ -42,6 +42,8 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public static final String EXTRA_FIT_ACTIVITY = PACKAGE_NAME + ".fitactivity";
   public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
 
+  private static final int GEOHASH_MIN_POINT_COUNT = 1;
+
   private final IBinder mBinder = new LocalBinder();
 
   private static final String CHANNEL_ID = "channel 1";
@@ -184,8 +186,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   private void resetGeohashFilter() {
-    mGeohashRTFilter = new GeohashRTFilter(mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
-        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT);
+    mGeohashRTFilter = new GeohashRTFilter(mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC, GEOHASH_MIN_POINT_COUNT);
     mGeohashRTFilter.stop();
     mGeohashRTFilter.reset(null);
   }
@@ -193,19 +194,33 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public void removeLocationUpdates() {
     Utils.logd(TAG, "Removing location updates");
     try {
-      Utils.setRequestingLocationUpdates(this, false);
-      ServicesHelper.getLocationService(this, KalmanLocationService::stop);
-      saveFitActivityToDB();
       Utils.logd(TAG, " Remove location updates, distanceAsIs " + mGeohashRTFilter.getDistanceAsIs());
       Utils.logd(TAG, " Remove location updates, distanceAsIsHp " + mGeohashRTFilter.getDistanceAsIsHP());
       Utils.logd(TAG, " Remove location updates, distanceGeoFiltered " + mGeohashRTFilter.getDistanceGeoFiltered());
       Utils.logd(TAG, " Remove location updates, distanceGeoFilteredHp " + mGeohashRTFilter.getDistanceGeoFilteredHP());
       Utils.logd(TAG, " Remove location upgates, size of filtered locations list: " + Integer.toString(mGeohashRTFilter.getGeoFilteredTrack().size()));
-      stopSelf();
+      Utils.setRequestingLocationUpdates(this, false);
+      ServicesHelper.getLocationService(this, KalmanLocationService::stop);
+      mServiceHandler.post(() -> {
+        mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter.getGeoFilteredTrack());
+        Utils.logd(TAG, " Remove location updates, geofiltered locations saved to DB");
+        saveFitActivityToDB();
+        reset();
+        stopSelf();
+      });
+//      saveFitActivityToDB();
+//      stopSelf();
     } catch (SecurityException unlikely) {
       Utils.setRequestingLocationUpdates(this, true);
       Utils.logd(TAG, "Lost location permission. Could not remove updates. " + unlikely);
     }
+  }
+
+  private void reset() {
+    mLocation = null;
+    mFitActivityId = -1;
+    mCurrentFitActivity = null;
+    listLocations.clear();
   }
 
   public Location getCurrentLocation() {
@@ -218,14 +233,8 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   private void saveFitActivityToDB() {
     mCurrentFitActivity.setEndTime(Calendar.getInstance().getTime());
-    mServiceHandler.post(() -> {
-      mRepository.updateActivity(mCurrentFitActivity);
-      Utils.logd(TAG, "User's activity saved to DB: " + mCurrentFitActivity.toString());
-      mLocation = null;
-      mFitActivityId = -1;
-      mCurrentFitActivity = null;
-      listLocations.clear();
-    });
+    mRepository.updateActivity(mCurrentFitActivity);
+    Utils.logd(TAG, "User's activity saved to DB: " + mCurrentFitActivity.toString());
   }
 
   private Notification getNotification() {

@@ -227,6 +227,8 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     if (requestCode == REQUEST_GPS) {
       if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
         mService.requestLocationUpdates();
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        chronometer.start();
       } else {
         Toast.makeText(this, "Location Permission denied", Toast.LENGTH_SHORT).show();
       }
