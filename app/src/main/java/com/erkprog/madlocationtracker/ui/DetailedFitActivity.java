@@ -14,12 +14,14 @@ import com.erkprog.madlocationtracker.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -44,6 +46,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   private List<LocationItem> mLocationItems;
   private TextView tvDistance;
   private TextView tvDuration;
+  private static final int MAP_PADDING = 80;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -94,8 +97,11 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
 
   private void displayLocations() {
     List<LatLng> routePoints = new ArrayList<>();
+    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
     for (LocationItem item : mLocationItems) {
-      routePoints.add(new LatLng(item.getLatitude(), item.getLongitude()));
+      routePoints.add(item.getLatLng());
+      builder.include(item.getLatLng());
     }
     Polyline route = mMap.addPolyline(new PolylineOptions()
         .width(WIDTH_OF_ROUTE)
@@ -105,12 +111,16 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
 
     displayFirstLocation(mLocationItems.get(0));
     displayLastLocation(mLocationItems.get(mLocationItems.size() - 1));
+
+    LatLngBounds bounds = builder.build();
+    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, MAP_PADDING);
+    mMap.moveCamera(cu);
   }
 
   private void displayLastLocation(LocationItem locationItem) {
     LatLng lastPosition = new LatLng(locationItem.getLatitude(), locationItem.getLongitude());
     mMap.addMarker(new MarkerOptions().position(lastPosition).icon(BitmapDescriptorFactory.fromResource(R.drawable.finish_icon)));
-    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastPosition, ZOOM));
+//    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastPosition, ZOOM));
   }
 
   private void displayFirstLocation(LocationItem locationItem) {

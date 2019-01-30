@@ -6,6 +6,8 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.PrimaryKey;
 import android.location.Location;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -99,5 +101,9 @@ public class LocationItem {
     location.setLatitude(this.latitude);
     location.setLongitude(this.longitude);
     return location;
+  }
+
+  public LatLng getLatLng() {
+    return new LatLng(this.latitude, this.longitude);
   }
 }
