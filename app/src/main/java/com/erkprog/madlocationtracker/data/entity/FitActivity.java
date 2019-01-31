@@ -6,6 +6,7 @@ import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Calendar;
 import java.util.Date;
 
 @Entity(tableName = "Activities")
@@ -28,9 +29,9 @@ public class FitActivity implements Parcelable {
 
   }
 
-  public FitActivity(long id, Date startTime) {
+  public FitActivity(long id) {
     this.id = id;
-    this.startTime = startTime;
+    this.startTime = Calendar.getInstance().getTime();
   }
 
   public Date getStartTime() {
@@ -105,7 +106,7 @@ public class FitActivity implements Parcelable {
     dest.writeFloat(this.distance);
   }
 
-  public static final Parcelable.Creator<FitActivity> CREATOR = new Parcelable.Creator<FitActivity>(){
+  public static final Parcelable.Creator<FitActivity> CREATOR = new Parcelable.Creator<FitActivity>() {
 
     @Override
     public FitActivity createFromParcel(Parcel source) {

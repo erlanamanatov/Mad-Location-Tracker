@@ -40,11 +40,11 @@ public class LocationItem {
 
   }
 
-  public LocationItem(Location location, long fitActivityId, Date date) {
+  public LocationItem(Location location, long fitActivityId) {
     latitude = location.getLatitude();
     longitude = location.getLongitude();
     this.fitActivityId = fitActivityId;
-    this.date = date;
+    this.date = Calendar.getInstance().getTime();
     this.tag = TAG_KALMAN_FILTERED;
   }
 

@@ -35,26 +35,21 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   private static final String TAG = LocationUpdatesService.class.getSimpleName();
 
-  private static final String PACKAGE_NAME =
-      "com.erkprog.madlocationtracker.locationupdatesservice";
+  private static final String PACKAGE_NAME = "com.erkprog.madlocationtracker.locationupdatesservice";
   public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
-
   public static final String EXTRA_FIT_ACTIVITY = PACKAGE_NAME + ".fitactivity";
   public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
-
   private static final int GEOHASH_MIN_POINT_COUNT = 1;
+  private static final String CHANNEL_ID = "channel 1";
+  private static final int NOTIFICATION_ID = 123;
 
   private final IBinder mBinder = new LocalBinder();
 
-  private static final String CHANNEL_ID = "channel 1";
-  private static final int NOTIFICATION_ID = 123;
   private boolean mChangingConfiguration = false;
 
-  HandlerThread handlerThread;
+  private HandlerThread handlerThread;
   private Handler mServiceHandler;
-
   private GeohashRTFilter mGeohashRTFilter;
-
   private FitActivity mCurrentFitActivity;
   private long mFitActivityId = -1;
   private NotificationManager mNotificationManager;
@@ -82,9 +77,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     }
 
     mRepository = AppApplication.getInstance().getRepository();
-
     ServicesHelper.addLocationServiceInterface(this);
-
   }
 
   @Override
@@ -104,6 +97,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     Utils.logd(TAG, "in onBind()");
     stopForeground(true);
     mChangingConfiguration = false;
+    Utils.logd(TAG, " changing KalmanFilter parameters to ForegroundSettings");
     getLocations(KalmanFilterSettings.getForegroundSettings());
     return mBinder;
   }
@@ -126,6 +120,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     if (!Utils.requestingLocationUpdates(this)) {
       ServicesHelper.getLocationService(this, KalmanLocationService::stop);
     } else if (!mChangingConfiguration && Utils.requestingLocationUpdates(this)) {
+      // App is getting location updates, need to change settings
       Utils.logd(TAG, " changing KalmanFilter parameters to BackgroundSettings");
       getLocations(KalmanFilterSettings.getBackgroundSettings());
       Utils.logd(TAG, "Starting foreground service");
@@ -143,9 +138,8 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + mFitActivityId);
     Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
     if (mFitActivityId != -1) {
-      mServiceHandler.post(() -> mRepository.saveLocation(new LocationItem(location, mFitActivityId, Calendar.getInstance().getTime())));
+      mServiceHandler.post(() -> mRepository.saveLocation(new LocationItem(location, mFitActivityId)));
     }
-
     sendBroadcast(mCurrentFitActivity, location);
   }
 
@@ -158,17 +152,16 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   public void requestLocationUpdates() {
+    Utils.logd(TAG, "Requesting location updates");
     startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
     listLocations = new ArrayList<>();
     resetGeohashFilter();
-    Utils.logd(TAG, "Requesting location updates");
     Utils.setRequestingLocationUpdates(this, true);
     mServiceHandler.post(() -> {
       mFitActivityId = mRepository.addActivity(new FitActivity());
-      mCurrentFitActivity = new FitActivity(mFitActivityId, Calendar.getInstance().getTime());
+      mCurrentFitActivity = new FitActivity(mFitActivityId);
       Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
     });
-
     getLocations(KalmanFilterSettings.getForegroundSettings());
   }
 
@@ -203,16 +196,16 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       ServicesHelper.getLocationService(this, KalmanLocationService::stop);
       mServiceHandler.post(() -> {
         mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter.getGeoFilteredTrack());
-        Utils.logd(TAG, " Remove location updates, geofiltered locations saved to DB");
+        Utils.logd(TAG, " geofiltered locations saved to DB");
         saveFitActivityToDB();
         reset();
         stopSelf();
       });
-//      saveFitActivityToDB();
-//      stopSelf();
     } catch (SecurityException unlikely) {
       Utils.setRequestingLocationUpdates(this, true);
       Utils.logd(TAG, "Lost location permission. Could not remove updates. " + unlikely);
+    } catch (Exception exception) {
+      Utils.loge(TAG, "Removing location updates: " + exception.getMessage());
     }
   }
 
@@ -261,7 +254,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   @Override
   public void locationChanged(Location location) {
-    Utils.loge(TAG, "locationChanged Triggered");
     if (Utils.requestingLocationUpdates(this)) {
       // tracking user's activity
       onNewLocation(location);
