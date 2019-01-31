@@ -53,7 +53,10 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   HandlerThread handlerThread;
   private Handler mServiceHandler;
 
-  private GeohashRTFilter mGeohashRTFilter;
+  private GeohashRTFilter mGeohashRTFilter81;
+  private GeohashRTFilter mGeohashRTFilter72;
+  private GeohashRTFilter mGeohashRTFilter71;
+  private GeohashRTFilter mGeohashRTFilter82;
 
   private FitActivity mCurrentFitActivity;
   private long mFitActivityId = -1;
@@ -186,23 +189,36 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   private void resetGeohashFilter() {
-    mGeohashRTFilter = new GeohashRTFilter(mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC, GEOHASH_MIN_POINT_COUNT);
-    mGeohashRTFilter.stop();
-    mGeohashRTFilter.reset(null);
+    mGeohashRTFilter81 = new GeohashRTFilter(mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC, GEOHASH_MIN_POINT_COUNT);
+    mGeohashRTFilter81.stop();
+    mGeohashRTFilter81.reset(null);
+    mGeohashRTFilter71 = new GeohashRTFilter(7, 1);
+    mGeohashRTFilter71.stop();
+    mGeohashRTFilter71.reset(null);
+    mGeohashRTFilter72 = new GeohashRTFilter(7, 2);
+    mGeohashRTFilter72.stop();
+    mGeohashRTFilter72.reset(null);
+    mGeohashRTFilter82 = new GeohashRTFilter(8, 2);
+    mGeohashRTFilter82.stop();
+    mGeohashRTFilter82.reset(null);
   }
 
   public void removeLocationUpdates() {
     Utils.logd(TAG, "Removing location updates");
     try {
-      Utils.logd(TAG, " Remove location updates, distanceAsIs " + mGeohashRTFilter.getDistanceAsIs());
-      Utils.logd(TAG, " Remove location updates, distanceAsIsHp " + mGeohashRTFilter.getDistanceAsIsHP());
-      Utils.logd(TAG, " Remove location updates, distanceGeoFiltered " + mGeohashRTFilter.getDistanceGeoFiltered());
-      Utils.logd(TAG, " Remove location updates, distanceGeoFilteredHp " + mGeohashRTFilter.getDistanceGeoFilteredHP());
-      Utils.logd(TAG, " Remove location upgates, size of filtered locations list: " + Integer.toString(mGeohashRTFilter.getGeoFilteredTrack().size()));
+      Utils.logd(TAG, " Remove location updates, distanceAsIs " + mGeohashRTFilter81.getDistanceAsIs());
+      Utils.logd(TAG, " Remove location updates, distanceAsIsHp " + mGeohashRTFilter81.getDistanceAsIsHP());
+      Utils.logd(TAG, " Remove location updates, distanceGeoFiltered " + mGeohashRTFilter81.getDistanceGeoFiltered());
+      Utils.logd(TAG, " Remove location updates, distanceGeoFilteredHp " + mGeohashRTFilter81.getDistanceGeoFilteredHP());
+      Utils.logd(TAG, " Remove location upgates, size of filtered locations list: " + Integer.toString(mGeohashRTFilter81.getGeoFilteredTrack().size()));
       Utils.setRequestingLocationUpdates(this, false);
       ServicesHelper.getLocationService(this, KalmanLocationService::stop);
       mServiceHandler.post(() -> {
-        mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter.getGeoFilteredTrack());
+//        mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter81.getGeoFilteredTrack(), "geo_filtered_81");
+        mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter81.getGeoFilteredTrack(), "geo_filtered_81");
+        mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter71.getGeoFilteredTrack(), "geo_filtered_71");
+        mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter72.getGeoFilteredTrack(), "geo_filtered_72");
+        mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter82.getGeoFilteredTrack(), "geo_filtered_82");
         Utils.logd(TAG, " Remove location updates, geofiltered locations saved to DB");
         saveFitActivityToDB();
         reset();
@@ -265,7 +281,10 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     if (Utils.requestingLocationUpdates(this)) {
       // tracking user's activity
       onNewLocation(location);
-      mGeohashRTFilter.filter(location);
+      mGeohashRTFilter81.filter(location);
+      mGeohashRTFilter82.filter(location);
+      mGeohashRTFilter71.filter(location);
+      mGeohashRTFilter72.filter(location);
     } else {
       // display current position, the user has not started activity yet
       sendBroadcast(null, location);

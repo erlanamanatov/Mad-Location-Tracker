@@ -44,10 +44,23 @@ public class LocalRepository {
     mDatabase.locationDao().addLocations(formattedList);
   }
 
+  public void saveGeoFilteredTrack(long fitActivityId, List<Location> geoFilteredTrack, String tag) {
+    List<LocationItem> formattedList = getFormattedLocations(fitActivityId, geoFilteredTrack, tag);
+    mDatabase.locationDao().addLocations(formattedList);
+  }
+
   private List<LocationItem> getFormattedLocations(long fitActivityId, List<Location> geoFilteredTrack) {
     List<LocationItem> list = new ArrayList<>();
     for (Location loc : geoFilteredTrack) {
       list.add(new LocationItem(loc, fitActivityId, LocationItem.TAG_GEO_FILTERED));
+    }
+    return list;
+  }
+
+  private List<LocationItem> getFormattedLocations(long fitActivityId, List<Location> geoFilteredTrack, String tag) {
+    List<LocationItem> list = new ArrayList<>();
+    for (Location loc : geoFilteredTrack) {
+      list.add(new LocationItem(loc, fitActivityId, tag));
     }
     return list;
   }

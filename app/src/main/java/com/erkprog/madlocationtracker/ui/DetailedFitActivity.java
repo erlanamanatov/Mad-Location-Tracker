@@ -20,6 +20,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -76,16 +77,119 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   }
 
   private void getLocations() {
+//    mRepository.getDatabase().locationDao()
+//        .getLocationsByActivity(mFitActivity.getId(), LocationItem.TAG_KALMAN_FILTERED)
+//        .subscribeOn(Schedulers.io())
+//        .observeOn(AndroidSchedulers.mainThread())
+//        .subscribe(new DisposableSingleObserver<List<LocationItem>>() {
+//          @Override
+//          public void onSuccess(List<LocationItem> locationItems) {
+//            Log.d(TAG, "onSuccess: " + locationItems.size() + " locations in db");
+//            mLocationItems = locationItems;
+//            displayLocations();
+//          }
+//
+//          @Override
+//          public void onError(Throwable e) {
+//            Log.d(TAG, "Error getting locations for this activity");
+//          }
+//        });
+    String searchTag = "";
+
+
+    searchTag = "geo_filtered_81";
+    searchShit(searchTag);
+//    searchTag = "geo_filtered_82";
+//    searchShit(searchTag);
+    searchTag = "geo_filtered_71";
+    searchShit(searchTag);
+//    searchTag = "geo_filtered_72";
+//    searchShit(searchTag);
+
+//    mRepository.getDatabase().locationDao()
+//        .getLocationsByActivity(mFitActivity.getId(), searchTag)
+//        .subscribeOn(Schedulers.io())
+//        .observeOn(AndroidSchedulers.mainThread())
+//        .subscribe(new DisposableSingleObserver<List<LocationItem>>() {
+//          @Override
+//          public void onSuccess(List<LocationItem> locationItems) {
+//            if (locationItems.size() > 101) {
+//              locationItems = locationItems.subList(
+//                  locationItems.size() - 99,
+//                  locationItems.size() - 1
+//              );
+//            }
+//            displayTestLocations(locationItems, searchTag);
+//          }
+//
+//          @Override
+//          public void onError(Throwable e) {
+//            Log.d(TAG, "Error getting locations for this activity");
+//          }
+//        });
+  }
+
+  private int getFillColor(String tag) {
+    int alpha = 140;
+    switch (tag) {
+      case LocationItem.TAG_KALMAN_FILTERED:
+        return Color.argb(alpha, 255, 255, 255);
+      case "geo_filtered_81":
+        return Color.argb(alpha, 219, 131, 17); // orange    948
+      case "geo_filtered_82":
+        return Color.argb(alpha, 0, 132, 11); // green  31
+      case "geo_filtered_71":
+        return Color.argb(alpha, 0, 6, 104); // blue  612
+      case "geo_filtered_72":
+        return Color.argb(alpha, 219, 17, 175); // pink  150
+      default:
+        return Color.argb(0, 0, 0, 0);
+    }
+  }
+
+  private int getRadius(String tag) {
+    switch (tag) {
+      case LocationItem.TAG_KALMAN_FILTERED:
+        return 8;
+      case "geo_filtered_81":
+        return 6; // orange    948
+      case "geo_filtered_82":
+        return 5; // green  31
+      case "geo_filtered_71":
+        return 4; // blue  612
+      case "geo_filtered_72":
+        return 7; // pink  150
+      default:
+        return 9;
+    }
+  }
+
+  private void searchShit(String searchTag) {
     mRepository.getDatabase().locationDao()
-        .getLocationsByActivity(mFitActivity.getId(), LocationItem.TAG_KALMAN_FILTERED)
+        .getLocationsByActivity(mFitActivity.getId(), searchTag)
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new DisposableSingleObserver<List<LocationItem>>() {
           @Override
           public void onSuccess(List<LocationItem> locationItems) {
-            Log.d(TAG, "onSuccess: " + locationItems.size() + " locations in db");
-            mLocationItems = locationItems;
-            displayLocations();
+//            if (locationItems.size() > 101) {
+//              locationItems = locationItems.subList(
+//                  locationItems.size() - 99,
+//                  locationItems.size() - 1
+//              );
+//            }
+            if (locationItems.size() > 700) {
+              locationItems = locationItems.subList(
+                  500,
+                  locationItems.size() - 1
+              );
+            } else {
+              locationItems = locationItems.subList(
+                  100,
+                  locationItems.size() - 1
+              );
+            }
+            displayTestLocations(locationItems, searchTag);
           }
 
           @Override
@@ -93,6 +197,22 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
             Log.d(TAG, "Error getting locations for this activity");
           }
         });
+  }
+
+  private void displayTestLocations(List<LocationItem> locationItems, String tag) {
+    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+    for (LocationItem item : locationItems) {
+      builder.include(item.getLatLng());
+      mMap.addCircle(new CircleOptions()
+          .center(item.getLatLng())
+          .fillColor(getFillColor(tag))
+          .strokeWidth(0.0f)
+          .radius(getRadius(tag)));
+    }
+
+    LatLngBounds bounds = builder.build();
+    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, MAP_PADDING);
+    mMap.moveCamera(cu);
   }
 
   private void displayLocations() {
@@ -133,7 +253,16 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   public static Intent getIntent(Context context, FitActivity fitActivity) {
     Intent intent = new Intent(context, DetailedFitActivity.class);
     intent.putExtra(KEY_FIT_ACTIVITY, fitActivity);
+
     return intent;
   }
+
 }
 
+
+//mMap.addCircle(new CircleOptions()
+//    .center(latLng)
+//    .fillColor(Color.argb(64, 0, 100, 100))
+//    .strokeColor(Color.argb(64, 0, 0, 0))
+//    .strokeWidth(0.0f)
+//    .radius(location.getAccuracy()));
