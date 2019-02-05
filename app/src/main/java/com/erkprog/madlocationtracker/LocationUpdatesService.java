@@ -40,6 +40,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public static final String EXTRA_FIT_ACTIVITY = PACKAGE_NAME + ".fitactivity";
   public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
   private static final int GEOHASH_MIN_POINT_COUNT = 1;
+  private static final int GEOHASH_HASH_LENGTH = 7;
   private static final String CHANNEL_ID = "channel 1";
   private static final int NOTIFICATION_ID = 123;
 
@@ -137,9 +138,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     listLocations.add(location);
     Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + mFitActivityId);
     Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
-    if (mFitActivityId != -1) {
-      mServiceHandler.post(() -> mRepository.saveLocation(new LocationItem(location, mFitActivityId)));
-    }
+//    if (mFitActivityId != -1) {
+//      mServiceHandler.post(() -> mRepository.saveLocation(new LocationItem(location, mFitActivityId)));
+//    }
     sendBroadcast(mCurrentFitActivity, location);
   }
 
@@ -179,7 +180,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   private void resetGeohashFilter() {
-    mGeohashRTFilter = new GeohashRTFilter(mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC, GEOHASH_MIN_POINT_COUNT);
+    mGeohashRTFilter = new GeohashRTFilter(GEOHASH_HASH_LENGTH, GEOHASH_MIN_POINT_COUNT);
     mGeohashRTFilter.stop();
     mGeohashRTFilter.reset(null);
   }
