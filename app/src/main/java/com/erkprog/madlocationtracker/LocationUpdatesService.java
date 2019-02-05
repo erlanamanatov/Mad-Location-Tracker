@@ -70,6 +70,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     mServiceHandler = new Handler(handlerThread.getLooper());
     mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     mGeohashRTFilter = new GeohashRTFilter(GEOHASH_HASH_LENGTH, GEOHASH_MIN_POINT_COUNT);
+    listLocations = new ArrayList<>();
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       CharSequence name = getString(R.string.app_name);
@@ -132,17 +133,12 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   private void onNewLocation(Location location) {
-    if (mLocation != null) {
-//      mCurrentFitActivity.addDistance(location.distanceTo(mLocation));
-      mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
-    }
+    mGeohashRTFilter.filter(location);
+    mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
     mLocation = location;
     listLocations.add(location);
     Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + mFitActivityId);
     Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
-//    if (mFitActivityId != -1) {
-//      mServiceHandler.post(() -> mRepository.saveLocation(new LocationItem(location, mFitActivityId)));
-//    }
     sendBroadcast(mCurrentFitActivity, location);
   }
 
@@ -157,7 +153,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public void requestLocationUpdates() {
     Utils.logd(TAG, "Requesting location updates");
     startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
-    listLocations = new ArrayList<>();
     resetGeohashFilter();
     Utils.setRequestingLocationUpdates(this, true);
     mServiceHandler.post(() -> {
@@ -179,11 +174,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       value.reset(settings);
       value.start();
     });
-  }
-
-  private void resetGeohashFilter() {
-    mGeohashRTFilter.stop();
-    mGeohashRTFilter.reset(null);
   }
 
   public void removeLocationUpdates() {
@@ -221,6 +211,11 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     listLocations.clear();
   }
 
+  private void resetGeohashFilter() {
+    mGeohashRTFilter.stop();
+    mGeohashRTFilter.reset(null);
+  }
+
   public Location getCurrentLocation() {
     return mLocation;
   }
@@ -253,7 +248,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       builder.setChannelId(CHANNEL_ID);
     }
-
     return builder.build();
   }
 
@@ -262,7 +256,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     if (Utils.requestingLocationUpdates(this)) {
       // tracking user's activity
       onNewLocation(location);
-      mGeohashRTFilter.filter(location);
     } else {
       // display current position, the user has not started activity yet
       sendBroadcast(null, location);
