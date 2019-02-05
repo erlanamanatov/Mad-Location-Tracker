@@ -12,6 +12,9 @@ class MainContract {
     void displayActivities(List<FitActivity> fitActivities);
 
     void startDetailedFitActivity(FitActivity fitActivity);
+
+    void showMessage(int resId);
+
   }
 
   interface Presenter extends ILifeCycle<View> {

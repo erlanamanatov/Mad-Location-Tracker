@@ -1,6 +1,6 @@
 package com.erkprog.madlocationtracker.ui.main;
 
-import com.erkprog.madlocationtracker.Utils;
+import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 
@@ -37,12 +37,16 @@ public class MainPresenter implements MainContract.Presenter {
 
           @Override
           public void onError(Throwable e) {
-            Utils.logd(TAG, "Error loading activities");
+            if (isAttached()) {
+              mView.showMessage(R.string.error_loading_data);
+            }
           }
 
           @Override
           public void onComplete() {
-            Utils.logd(TAG, "no activities in db");
+            if (isAttached()) {
+              mView.showMessage(R.string.no_activities_in_db);
+            }
           }
         });
   }

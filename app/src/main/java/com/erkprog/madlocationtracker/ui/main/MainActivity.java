@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -69,6 +70,11 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
   }
 
   @Override
+  public void showMessage(int resId) {
+    Snackbar.make(findViewById(R.id.rcv_activities), getText(resId), Snackbar.LENGTH_LONG).show();
+  }
+
+  @Override
   public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
     if (key.equals(Utils.KEY_REQUESTING_LOCATION_UPDATES)) {
       setFloatingButtonState(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES, false));
@@ -94,5 +100,4 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     mPresenter.unBind();
     super.onDestroy();
   }
-
 }
