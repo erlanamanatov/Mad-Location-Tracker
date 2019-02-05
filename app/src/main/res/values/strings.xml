@@ -14,4 +14,5 @@
   <string name="zero_meters">0.00 m</string>
   <string name="error_loading_data">Error loading saved data</string>
   <string name="no_activities_in_db">No saved activities in DB</string>
+  <string name="error_loading_detailed_data">Error loading detailed data</string>
 </resources>

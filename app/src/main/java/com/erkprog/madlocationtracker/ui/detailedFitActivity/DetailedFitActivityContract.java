@@ -10,6 +10,8 @@ public class DetailedFitActivityContract {
   interface View {
 
     void showTrack(List<LocationItem> locationItems);
+
+    void showMessage(int resId);
   }
 
   interface Presenter extends ILifeCycle<View> {

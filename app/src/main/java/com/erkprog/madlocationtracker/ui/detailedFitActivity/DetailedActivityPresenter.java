@@ -1,6 +1,6 @@
 package com.erkprog.madlocationtracker.ui.detailedFitActivity;
 
-import com.erkprog.madlocationtracker.Utils;
+import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
@@ -32,18 +32,18 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
         .subscribe(new DisposableSingleObserver<List<LocationItem>>() {
           @Override
           public void onSuccess(List<LocationItem> locationItems) {
-            if (locationItems.size() > 0) {
+            if (isAttached() && locationItems.size() > 0) {
               mView.showTrack(locationItems);
-//              displayLocations();
             }
           }
 
           @Override
           public void onError(Throwable e) {
-            Utils.logd(TAG, "Error getting locations, fitActivity id = " + String.valueOf(mFitActivity.getId()));
+            if (isAttached()) {
+              mView.showMessage(R.string.error_loading_detailed_data);
+            }
           }
         });
-
   }
 
   @Override

@@ -3,6 +3,7 @@ package com.erkprog.madlocationtracker.ui.detailedFitActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -34,8 +35,6 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   private static final float WIDTH_OF_ROUTE = 25;
 
   private GoogleMap mMap;
-  private TextView tvDistance;
-  private TextView tvDuration;
   private static final int MAP_PADDING = 80;
 
   private DetailedFitActivityContract.Presenter mPresenter;
@@ -47,12 +46,12 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
         .findFragmentById(R.id.map);
     mapFragment.getMapAsync(this);
-    tvDistance = findViewById(R.id.act_detail_distance);
-    tvDuration = findViewById(R.id.act_detail_duration);
 
     FitActivity fitActivity = getIntent().getParcelableExtra(KEY_FIT_ACTIVITY);
-    tvDistance.setText(Utils.getFormattedDistance(fitActivity.getDistance()));
-    tvDuration.setText(Utils.getFormattedTime(fitActivity.getEndTime().getTime() - fitActivity.getStartTime().getTime()));
+    ((TextView) findViewById(R.id.act_detail_distance))
+        .setText(Utils.getFormattedDistance(fitActivity.getDistance()));
+    ((TextView) findViewById(R.id.act_detail_duration))
+        .setText(Utils.getFormattedTime(fitActivity.getEndTime().getTime() - fitActivity.getStartTime().getTime()));
 
     mPresenter = new DetailedActivityPresenter(AppApplication.getInstance().getRepository(), fitActivity);
     mPresenter.bind(this);
@@ -65,6 +64,11 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mMap.getUiSettings().setTiltGesturesEnabled(false);
     mMap.setOnMarkerClickListener(marker -> true);
     mPresenter.getLocations();
+  }
+
+  @Override
+  public void showMessage(int resId) {
+    Snackbar.make(findViewById(R.id.act_detail_duration), getText(resId), Snackbar.LENGTH_LONG).show();
   }
 
   @Override
