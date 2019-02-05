@@ -21,6 +21,6 @@ public interface ActivityDao {
   @Update
   void updateActivity(FitActivity activity);
 
-  @Query("Select * from Activities")
+  @Query("Select * from Activities where end_time is not null")
   Maybe<List<FitActivity>> getAllActivities();
 }

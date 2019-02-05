@@ -22,21 +22,6 @@ public class MainPresenter implements MainContract.Presenter {
   }
 
   @Override
-  public void bind(MainContract.View view) {
-    mView = view;
-  }
-
-  @Override
-  public void unBind() {
-    mView = null;
-  }
-
-  @Override
-  public boolean isAttached() {
-    return mView != null;
-  }
-
-  @Override
   public void loadFitActivities() {
     mRepository.getDatabase().acitivityDao()
         .getAllActivities()
@@ -60,6 +45,25 @@ public class MainPresenter implements MainContract.Presenter {
             Utils.logd(TAG, "no activities in db");
           }
         });
+  }
 
+  @Override
+  public void onFitActivityClicked(FitActivity fitActivity) {
+    mView.startDetailedFitActivity(fitActivity);
+  }
+
+  @Override
+  public void bind(MainContract.View view) {
+    mView = view;
+  }
+
+  @Override
+  public void unBind() {
+    mView = null;
+  }
+
+  @Override
+  public boolean isAttached() {
+    return mView != null;
   }
 }

@@ -10,6 +10,8 @@ class MainContract {
   interface View {
 
     void displayActivities(List<FitActivity> fitActivities);
+
+    void startDetailedFitActivity(FitActivity fitActivity);
   }
 
   interface Presenter extends ILifeCycle<View> {
@@ -18,5 +20,6 @@ class MainContract {
 
     void loadFitActivities();
 
+    void onFitActivityClicked(FitActivity fitActivity);
   }
 }

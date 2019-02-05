@@ -47,6 +47,11 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
   }
 
   private void onFitActivityClicked(FitActivity fitActivity) {
+    mPresenter.onFitActivityClicked(fitActivity);
+  }
+
+  @Override
+  public void startDetailedFitActivity(FitActivity fitActivity) {
     startActivity(DetailedFitActivity.getIntent(this, fitActivity));
   }
 
