@@ -6,29 +6,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.widget.Toast;
 
 import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
-import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 import com.erkprog.madlocationtracker.ui.CreateFitActivity;
 import com.erkprog.madlocationtracker.ui.DetailedFitActivity;
 
 import java.util.List;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.observers.DisposableMaybeObserver;
-import io.reactivex.schedulers.Schedulers;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainContract.View {
 
   private static final String TAG = "MainActivity";
 
   private RecyclerView mRecyclerView;
   private FitActivityAdapter mAdapter;
-
-  private LocalRepository mRepository;
+  private MainContract.Presenter mPresenter;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -41,37 +34,31 @@ public class MainActivity extends AppCompatActivity {
       startActivity(newFitActivity);
     });
 
+    mPresenter = new MainPresenter(AppApplication.getInstance().getRepository());
+    mPresenter.bind(this);
     mRecyclerView = findViewById(R.id.rcv_activities);
     mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-    mRepository = AppApplication.getInstance().getRepository();
-    loadData();
   }
 
-  private void loadData() {
-    mRepository.getDatabase().acitivityDao()
-        .getAllActivities()
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new DisposableMaybeObserver<List<FitActivity>>() {
-          @Override
-          public void onSuccess(List<FitActivity> fitActivities) {
-            mAdapter = new FitActivityAdapter(fitActivities, MainActivity.this::onFitActivityClicked);
-            mRecyclerView.setAdapter(mAdapter);
-          }
-
-          @Override
-          public void onError(Throwable e) {
-            Toast.makeText(MainActivity.this, "Error loading activities", Toast.LENGTH_SHORT).show();
-          }
-
-          @Override
-          public void onComplete() {
-            Toast.makeText(MainActivity.this, "No activities in db", Toast.LENGTH_SHORT).show();
-          }
-        });
+  @Override
+  protected void onStart() {
+    super.onStart();
+    mPresenter.loadFitActivities();
   }
 
   private void onFitActivityClicked(FitActivity fitActivity) {
     startActivity(DetailedFitActivity.getIntent(this, fitActivity));
+  }
+
+  @Override
+  public void displayActivities(List<FitActivity> fitActivities) {
+    mAdapter = new FitActivityAdapter(fitActivities, MainActivity.this::onFitActivityClicked);
+    mRecyclerView.setAdapter(mAdapter);
+  }
+
+  @Override
+  protected void onDestroy() {
+    mPresenter.unBind();
+    super.onDestroy();
   }
 }
