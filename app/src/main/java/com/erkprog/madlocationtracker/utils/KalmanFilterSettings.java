@@ -1,4 +1,4 @@
-package com.erkprog.madlocationtracker;
+package com.erkprog.madlocationtracker.utils;
 
 import mad.location.manager.lib.Services.KalmanLocationService;
 

@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.erkprog.madlocationtracker.R;
-import com.erkprog.madlocationtracker.Utils;
+import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 
 import java.util.Date;

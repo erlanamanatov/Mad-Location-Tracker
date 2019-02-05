@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 import com.erkprog.madlocationtracker.LocationUpdatesService;
 import com.erkprog.madlocationtracker.R;
-import com.erkprog.madlocationtracker.Utils;
+import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;

@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
-import com.erkprog.madlocationtracker.Utils;
+import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.google.android.gms.maps.CameraUpdate;

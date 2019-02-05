@@ -1,11 +1,10 @@
-package com.erkprog.madlocationtracker;
+package com.erkprog.madlocationtracker.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
