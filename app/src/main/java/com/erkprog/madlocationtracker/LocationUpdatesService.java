@@ -69,6 +69,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     handlerThread.start();
     mServiceHandler = new Handler(handlerThread.getLooper());
     mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+    mGeohashRTFilter = new GeohashRTFilter(GEOHASH_HASH_LENGTH, GEOHASH_MIN_POINT_COUNT);
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       CharSequence name = getString(R.string.app_name);
@@ -132,7 +133,8 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   private void onNewLocation(Location location) {
     if (mLocation != null) {
-      mCurrentFitActivity.addDistance(location.distanceTo(mLocation));
+//      mCurrentFitActivity.addDistance(location.distanceTo(mLocation));
+      mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
     }
     mLocation = location;
     listLocations.add(location);
@@ -180,7 +182,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   private void resetGeohashFilter() {
-    mGeohashRTFilter = new GeohashRTFilter(GEOHASH_HASH_LENGTH, GEOHASH_MIN_POINT_COUNT);
     mGeohashRTFilter.stop();
     mGeohashRTFilter.reset(null);
   }
@@ -188,18 +189,21 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public void removeLocationUpdates() {
     Utils.logd(TAG, "Removing location updates");
     try {
+      Utils.setRequestingLocationUpdates(this, false);
+      ServicesHelper.getLocationService(this, KalmanLocationService::stop);
+      mGeohashRTFilter.stop();
+      mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
       Utils.logd(TAG, " Remove location updates, distanceAsIs " + mGeohashRTFilter.getDistanceAsIs());
       Utils.logd(TAG, " Remove location updates, distanceAsIsHp " + mGeohashRTFilter.getDistanceAsIsHP());
       Utils.logd(TAG, " Remove location updates, distanceGeoFiltered " + mGeohashRTFilter.getDistanceGeoFiltered());
       Utils.logd(TAG, " Remove location updates, distanceGeoFilteredHp " + mGeohashRTFilter.getDistanceGeoFilteredHP());
       Utils.logd(TAG, " Remove location upgates, size of filtered locations list: " + Integer.toString(mGeohashRTFilter.getGeoFilteredTrack().size()));
-      Utils.setRequestingLocationUpdates(this, false);
-      ServicesHelper.getLocationService(this, KalmanLocationService::stop);
       mServiceHandler.post(() -> {
         mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter.getGeoFilteredTrack());
         Utils.logd(TAG, " geofiltered locations saved to DB");
         saveFitActivityToDB();
         reset();
+        mGeohashRTFilter.reset(null);
         stopSelf();
       });
     } catch (SecurityException unlikely) {

@@ -77,7 +77,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
 
   private void getLocations() {
     mRepository.getDatabase().locationDao()
-        .getLocationsByActivity(mFitActivity.getId(), LocationItem.TAG_KALMAN_FILTERED)
+        .getLocationsByActivity(mFitActivity.getId(), LocationItem.TAG_GEO_FILTERED)
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new DisposableSingleObserver<List<LocationItem>>() {
@@ -85,9 +85,10 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
           public void onSuccess(List<LocationItem> locationItems) {
             Log.d(TAG, "onSuccess: " + locationItems.size() + " locations in db");
             mLocationItems = locationItems;
-            displayLocations();
+            if (locationItems.size() > 0) {
+              displayLocations();
+            }
           }
-
           @Override
           public void onError(Throwable e) {
             Log.d(TAG, "Error getting locations for this activity");

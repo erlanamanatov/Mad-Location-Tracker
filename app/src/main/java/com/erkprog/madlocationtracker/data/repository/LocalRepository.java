@@ -40,8 +40,10 @@ public class LocalRepository {
   }
 
   public void saveGeoFilteredTrack(long fitActivityId, List<Location> geoFilteredTrack) {
-    List<LocationItem> formattedList = getFormattedLocations(fitActivityId, geoFilteredTrack);
-    mDatabase.locationDao().addLocations(formattedList);
+    if (geoFilteredTrack.size() > 0) {
+      List<LocationItem> formattedList = getFormattedLocations(fitActivityId, geoFilteredTrack);
+      mDatabase.locationDao().addLocations(formattedList);
+    }
   }
 
   private List<LocationItem> getFormattedLocations(long fitActivityId, List<Location> geoFilteredTrack) {
