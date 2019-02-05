@@ -11,4 +11,5 @@
   <string name="turn_on_gps_to_get_updates">Turn GPS on to get location updates</string>
   <string name="start">Start</string>
   <string name="stop">Stop</string>
+  <string name="zero_meters">0.00 m</string>
 </resources>

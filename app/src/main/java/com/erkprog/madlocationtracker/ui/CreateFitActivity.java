@@ -170,9 +170,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
       case R.id.button_request_location:
         if (isGpsPersmissionGranted()) {
           if (isGpsEnabled()) {
-            mService.requestLocationUpdates();
-            chronometer.setBase(SystemClock.elapsedRealtime());
-            chronometer.start();
+            startTracking();
           } else {
             showTurnGpsOnDialog();
           }
@@ -186,6 +184,13 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
         chronometer.stop();
         break;
     }
+  }
+
+  private void startTracking() {
+    mService.requestLocationUpdates();
+    tvDistance.setText(getString(R.string.zero_meters));
+    chronometer.setBase(SystemClock.elapsedRealtime());
+    chronometer.start();
   }
 
   private boolean isGpsEnabled() {
@@ -226,9 +231,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     if (requestCode == REQUEST_GPS) {
       if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-        mService.requestLocationUpdates();
-        chronometer.setBase(SystemClock.elapsedRealtime());
-        chronometer.start();
+        startTracking();
       } else {
         Toast.makeText(this, "Location Permission denied", Toast.LENGTH_SHORT).show();
       }
