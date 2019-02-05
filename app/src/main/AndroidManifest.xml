@@ -45,7 +45,7 @@
         android:value="@string/google_maps_key"/>
 
     <activity
-        android:name=".ui.DetailedFitActivity"
+        android:name=".ui.detailedFitActivity.DetailedFitActivity"
         android:label="@string/title_activity_detailed_fit">
     </activity>
   </application>
