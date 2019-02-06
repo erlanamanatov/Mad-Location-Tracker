@@ -14,7 +14,7 @@ import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
-import com.erkprog.madlocationtracker.ui.CreateFitActivity;
+import com.erkprog.madlocationtracker.ui.TrackFitActivity;
 import com.erkprog.madlocationtracker.ui.detailedFitActivity.DetailedFitActivity;
 
 import java.util.List;
@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
 
     trackFitActivity = findViewById(R.id.floatingActionButton);
     trackFitActivity.setOnClickListener(v -> {
-      Intent newFitActivity = new Intent(MainActivity.this, CreateFitActivity.class);
+      Intent newFitActivity = new Intent(MainActivity.this, TrackFitActivity.class);
       startActivity(newFitActivity);
     });
 

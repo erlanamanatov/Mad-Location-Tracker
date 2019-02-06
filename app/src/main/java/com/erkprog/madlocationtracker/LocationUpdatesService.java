@@ -18,7 +18,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
-import com.erkprog.madlocationtracker.ui.CreateFitActivity;
+import com.erkprog.madlocationtracker.ui.TrackFitActivity;
 import com.erkprog.madlocationtracker.utils.KalmanFilterSettings;
 import com.erkprog.madlocationtracker.utils.Utils;
 
@@ -102,7 +102,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     stopForeground(true);
     mChangingConfiguration = false;
     Utils.logd(TAG, " changing KalmanFilter parameters to ForegroundSettings");
-    getLocations(KalmanFilterSettings.getForegroundSettings());
+    requestLocationUpdates(KalmanFilterSettings.getForegroundSettings());
     return mBinder;
   }
 
@@ -112,7 +112,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     stopForeground(true);
     if (!mChangingConfiguration && Utils.requestingLocationUpdates(this)) {
       Utils.logd(TAG, " changing KalmanFilter parameters to ForegroundSettings");
-      getLocations(KalmanFilterSettings.getForegroundSettings());
+      requestLocationUpdates(KalmanFilterSettings.getForegroundSettings());
     }
     mChangingConfiguration = false;
     super.onRebind(intent);
@@ -126,7 +126,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     } else if (!mChangingConfiguration && Utils.requestingLocationUpdates(this)) {
       // App is getting location updates, need to change settings
       Utils.logd(TAG, " changing KalmanFilter parameters to BackgroundSettings");
-      getLocations(KalmanFilterSettings.getBackgroundSettings());
+      requestLocationUpdates(KalmanFilterSettings.getBackgroundSettings());
       Utils.logd(TAG, "Starting foreground service");
       startForeground(NOTIFICATION_ID, getNotification());
     }
@@ -151,7 +151,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     LocalBroadcastManager.getInstance(AppApplication.getInstance()).sendBroadcast(intent);
   }
 
-  public void requestLocationUpdates() {
+  public void startTracking() {
     Utils.logd(TAG, "Requesting location updates");
     startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
     resetGeohashFilter();
@@ -161,10 +161,10 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       mCurrentFitActivity = new FitActivity(mFitActivityId);
       Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
     });
-    getLocations(KalmanFilterSettings.getForegroundSettings());
+    requestLocationUpdates(KalmanFilterSettings.getForegroundSettings());
   }
 
-  private void getLocations(KalmanLocationService.Settings settings) {
+  private void requestLocationUpdates(KalmanLocationService.Settings settings) {
     ServicesHelper.getLocationService(this, value -> {
       if (value.IsRunning()) {
         Utils.logd(TAG, "Value is running");
@@ -177,7 +177,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     });
   }
 
-  public void removeLocationUpdates() {
+  public void stopTracking() {
     Utils.logd(TAG, "Removing location updates");
     try {
       Utils.setRequestingLocationUpdates(this, false);
@@ -234,7 +234,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   private Notification getNotification() {
     CharSequence text = "Getting location updates";
     PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
-        new Intent(this, CreateFitActivity.class), 0);
+        new Intent(this, TrackFitActivity.class), 0);
 
     NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
         .setContentText(text)
@@ -259,6 +259,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       onNewLocation(location);
     } else {
       // display current position, the user has not started activity yet
+      // TODO: create new broadcast to avoid null
       sendBroadcast(null, location);
     }
   }

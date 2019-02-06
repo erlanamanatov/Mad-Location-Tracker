@@ -49,13 +49,13 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreateFitActivity extends AppCompatActivity implements View.OnClickListener,
+public class TrackFitActivity extends AppCompatActivity implements View.OnClickListener,
     SharedPreferences.OnSharedPreferenceChangeListener,
     OnMapReadyCallback {
-  private static final String TAG = "CreateFitActivity";
+  private static final String TAG = "TrackFitActivity";
 
   Button buttonRequestLocationUpdates, buttonRemoveLocationUpdates;
-  TextView tvDistance, tvTime;
+  TextView tvDistance;
   Chronometer chronometer;
 
   private LocationUpdatesService mService = null;
@@ -67,7 +67,6 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
   private Circle locationAccuracy;
   private Marker userPositionMarker;
   private BitmapDescriptor userPositionIcon;
-  private static final int ZOOM = 11;
   private static final float ROUTE_WIDTH = 25;
   private static final String ROUTE_COLOR = "#801B60FE";
 
@@ -79,7 +78,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
       LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
       mService = binder.getService();
       mBound = true;
-      if (Utils.requestingLocationUpdates(CreateFitActivity.this) && mService.getCurrentLocation() != null && mMap != null) {
+      if (Utils.requestingLocationUpdates(TrackFitActivity.this) && mService.getCurrentLocation() != null && mMap != null) {
         zoomMapTo(mService.getCurrentLocation());
         drawPositionMarker(mService.getCurrentLocation());
         if (mService.getCurrentFitActivity() != null) {
@@ -111,7 +110,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_create_fit_activity);
+    setContentView(R.layout.activity_track_fit_activity);
     SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
         .findFragmentById(R.id.active_map);
     mapFragment.getMapAsync(this);
@@ -180,14 +179,14 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
         break;
 
       case R.id.button_remove_locations:
-        mService.removeLocationUpdates();
+        mService.stopTracking();
         chronometer.stop();
         break;
     }
   }
 
   private void startTracking() {
-    mService.requestLocationUpdates();
+    mService.startTracking();
     tvDistance.setText(getString(R.string.zero_meters));
     chronometer.setBase(SystemClock.elapsedRealtime());
     chronometer.start();
@@ -199,7 +198,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
   }
 
   private boolean isGpsPersmissionGranted() {
-    return ActivityCompat.checkSelfPermission(CreateFitActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    return ActivityCompat.checkSelfPermission(TrackFitActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
   }
 
   private void requestGpsPermission() {
@@ -212,7 +211,7 @@ public class CreateFitActivity extends AppCompatActivity implements View.OnClick
         .setTitle(R.string.gps_disabled)
         .setPositiveButton(R.string.to_settings, (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
         .setNegativeButton(R.string.cancel, (dialog, which) ->
-            Toast.makeText(CreateFitActivity.this, getString(R.string.turn_on_gps_to_get_updates), Toast.LENGTH_SHORT).show());
+            Toast.makeText(TrackFitActivity.this, getString(R.string.turn_on_gps_to_get_updates), Toast.LENGTH_SHORT).show());
     builder.show();
   }
 
