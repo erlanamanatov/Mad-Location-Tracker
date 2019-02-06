@@ -18,7 +18,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
-import com.erkprog.madlocationtracker.ui.TrackFitActivity;
+import com.erkprog.madlocationtracker.ui.trackFitActivity.TrackFitActivity;
 import com.erkprog.madlocationtracker.utils.KalmanFilterSettings;
 import com.erkprog.madlocationtracker.utils.Utils;
 

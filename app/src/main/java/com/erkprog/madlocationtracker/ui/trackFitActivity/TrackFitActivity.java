@@ -1,4 +1,4 @@
-package com.erkprog.madlocationtracker.ui;
+package com.erkprog.madlocationtracker.ui.trackFitActivity;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -51,12 +51,15 @@ import java.util.List;
 
 public class TrackFitActivity extends AppCompatActivity implements View.OnClickListener,
     SharedPreferences.OnSharedPreferenceChangeListener,
-    OnMapReadyCallback {
+    OnMapReadyCallback,
+    TrackActivityContract.View {
   private static final String TAG = "TrackFitActivity";
 
   Button buttonRequestLocationUpdates, buttonRemoveLocationUpdates;
   TextView tvDistance;
   Chronometer chronometer;
+
+  private TrackActivityContract.Presenter mPresenter;
 
   private LocationUpdatesService mService = null;
   private static final int REQUEST_GPS = 1;
@@ -75,9 +78,11 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   private final ServiceConnection mServiceConnection = new ServiceConnection() {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
+      Utils.logd(TAG, "Service connected");
       LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
       mService = binder.getService();
       mBound = true;
+      mPresenter.onServiceConnected(Utils.requestingLocationUpdates(TrackFitActivity.this));
       if (Utils.requestingLocationUpdates(TrackFitActivity.this) && mService.getCurrentLocation() != null && mMap != null) {
         zoomMapTo(mService.getCurrentLocation());
         drawPositionMarker(mService.getCurrentLocation());
@@ -98,6 +103,21 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   };
 
   @Override
+  public boolean isMapReady() {
+    return mMap != null;
+  }
+
+  @Override
+  public boolean isCurrentLocationAvailable() {
+    return mService != null && mService.getCurrentLocation() != null;
+  }
+
+  @Override
+  public boolean isCurrentFitActivityAvailable() {
+    return mService != null && mService.getCurrentFitActivity() != null;
+  }
+
+  @Override
   public void onMapReady(GoogleMap googleMap) {
     mMap = googleMap;
     mMap.getUiSettings().setRotateGesturesEnabled(false);
@@ -108,14 +128,27 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   }
 
   @Override
+  public void moveCameraToCurrentPosition() {
+    zoomMapTo(mService.getCurrentLocation());
+    drawPositionMarker(mService.getCurrentLocation());
+    if (mService.getCurrentFitActivity() != null) {
+      chronometer.setBase(
+          SystemClock.elapsedRealtime() - (System.currentTimeMillis() - mService.getCurrentFitActivity().getStartTime().getTime()));
+      chronometer.start();
+      tvDistance.setText(Utils.getFormattedDistance(mService.getCurrentFitActivity().getDistance()));
+    }
+  }
+
+  @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_track_fit_activity);
     SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
         .findFragmentById(R.id.active_map);
     mapFragment.getMapAsync(this);
-
     init();
+    mPresenter = new TrackActivityPresenter();
+    mPresenter.bind(this);
   }
 
   private void init() {
@@ -330,5 +363,11 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
         zoomMapTo(newLocation);
       }
     }
+  }
+
+  @Override
+  protected void onDestroy() {
+    mPresenter.unBind();
+    super.onDestroy();
   }
 }

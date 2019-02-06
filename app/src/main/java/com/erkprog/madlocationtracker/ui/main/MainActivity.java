@@ -14,7 +14,7 @@ import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
-import com.erkprog.madlocationtracker.ui.TrackFitActivity;
+import com.erkprog.madlocationtracker.ui.trackFitActivity.TrackFitActivity;
 import com.erkprog.madlocationtracker.ui.detailedFitActivity.DetailedFitActivity;
 
 import java.util.List;
