@@ -2,6 +2,7 @@ package com.erkprog.madlocationtracker.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -31,11 +32,15 @@ public class Utils {
   }
 
   @SuppressLint("DefaultLocale")
-  public static String getFormattedTime(long diff) {
+  public static String getTotalDuration(long diff) {
     long diffSeconds = diff / 1000 % 60;
     long diffMinutes = diff / (60 * 1000) % 60;
     long diffHours = diff / (60 * 60 * 1000);
     return String.format("%dh %dm %ds", diffHours, diffMinutes, diffSeconds);
+  }
+
+  public static long getBaseForChronometer(Date startTimeOfActivity) {
+    return SystemClock.elapsedRealtime() - (System.currentTimeMillis() - startTimeOfActivity.getTime());
   }
 
   public static void logd(String tag, String message) {

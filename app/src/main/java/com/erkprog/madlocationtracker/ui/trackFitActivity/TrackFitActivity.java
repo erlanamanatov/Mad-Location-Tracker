@@ -47,6 +47,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TrackFitActivity extends AppCompatActivity implements View.OnClickListener,
@@ -83,16 +84,16 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       mService = binder.getService();
       mBound = true;
       mPresenter.onServiceConnected(Utils.requestingLocationUpdates(TrackFitActivity.this));
-      if (Utils.requestingLocationUpdates(TrackFitActivity.this) && mService.getCurrentLocation() != null && mMap != null) {
-        zoomMapTo(mService.getCurrentLocation());
-        drawPositionMarker(mService.getCurrentLocation());
-        if (mService.getCurrentFitActivity() != null) {
-          chronometer.setBase(
-              SystemClock.elapsedRealtime() - (System.currentTimeMillis() - mService.getCurrentFitActivity().getStartTime().getTime()));
-          chronometer.start();
-          tvDistance.setText(Utils.getFormattedDistance(mService.getCurrentFitActivity().getDistance()));
-        }
-      }
+//      if (Utils.requestingLocationUpdates(TrackFitActivity.this) && mService.getCurrentLocation() != null && mMap != null) {
+//        zoomMapTo(mService.getCurrentLocation());
+//        drawPositionMarker(mService.getCurrentLocation());
+//        if (mService.getCurrentFitActivity() != null) {
+//          chronometer.setBase(
+//              SystemClock.elapsedRealtime() - (System.currentTimeMillis() - mService.getCurrentFitActivity().getStartTime().getTime()));
+//          chronometer.start();
+//          tvDistance.setText(Utils.getFormattedDistance(mService.getCurrentFitActivity().getDistance()));
+//        }
+//      }
     }
 
     @Override
@@ -108,16 +109,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   }
 
   @Override
-  public boolean isCurrentLocationAvailable() {
-    return mService != null && mService.getCurrentLocation() != null;
-  }
-
-  @Override
-  public boolean isCurrentFitActivityAvailable() {
-    return mService != null && mService.getCurrentFitActivity() != null;
-  }
-
-  @Override
   public void onMapReady(GoogleMap googleMap) {
     mMap = googleMap;
     mMap.getUiSettings().setRotateGesturesEnabled(false);
@@ -128,15 +119,39 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   }
 
   @Override
-  public void moveCameraToCurrentPosition() {
-    zoomMapTo(mService.getCurrentLocation());
-    drawPositionMarker(mService.getCurrentLocation());
+  public void showCurrentPosition(Location location) {
+    zoomMapTo(location);
+    drawPositionMarker(location);
+
+    //TODO: create another method
     if (mService.getCurrentFitActivity() != null) {
       chronometer.setBase(
           SystemClock.elapsedRealtime() - (System.currentTimeMillis() - mService.getCurrentFitActivity().getStartTime().getTime()));
       chronometer.start();
       tvDistance.setText(Utils.getFormattedDistance(mService.getCurrentFitActivity().getDistance()));
     }
+
+  }
+
+  @Override
+  public Location getCurrentLocation() {
+    return mService != null ? mService.getCurrentLocation() : null;
+  }
+
+  @Override
+  public FitActivity getCurrentFitActivity() {
+    return mService != null ? mService.getCurrentFitActivity() : null;
+  }
+
+  @Override
+  public void showDistance(String distance) {
+    tvDistance.setText(distance);
+  }
+
+  @Override
+  public void showDuration(Date startDate) {
+    chronometer.setBase(Utils.getBaseForChronometer(startDate));
+    chronometer.start();
   }
 
   @Override

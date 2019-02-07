@@ -51,7 +51,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     ((TextView) findViewById(R.id.act_detail_distance))
         .setText(Utils.getFormattedDistance(fitActivity.getDistance()));
     ((TextView) findViewById(R.id.act_detail_duration))
-        .setText(Utils.getFormattedTime(fitActivity.getEndTime().getTime() - fitActivity.getStartTime().getTime()));
+        .setText(Utils.getTotalDuration(fitActivity.getEndTime().getTime() - fitActivity.getStartTime().getTime()));
 
     mPresenter = new DetailedActivityPresenter(AppApplication.getInstance().getRepository(), fitActivity);
     mPresenter.bind(this);

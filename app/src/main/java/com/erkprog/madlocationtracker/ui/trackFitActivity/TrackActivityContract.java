@@ -1,6 +1,11 @@
 package com.erkprog.madlocationtracker.ui.trackFitActivity;
 
+import android.location.Location;
+
 import com.erkprog.madlocationtracker.ILifeCycle;
+import com.erkprog.madlocationtracker.data.entity.FitActivity;
+
+import java.util.Date;
 
 public class TrackActivityContract {
 
@@ -8,11 +13,15 @@ public class TrackActivityContract {
 
     boolean isMapReady();
 
-    boolean isCurrentLocationAvailable();
+    void showCurrentPosition(Location location);
 
-    void moveCameraToCurrentPosition();
+    Location getCurrentLocation();
 
-    boolean isCurrentFitActivityAvailable();
+    FitActivity getCurrentFitActivity();
+
+    void showDistance(String distance);
+
+    void showDuration(Date startDate);
   }
 
   interface Presenter extends ILifeCycle<View> {
