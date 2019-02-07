@@ -25,6 +25,7 @@ import com.erkprog.madlocationtracker.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import mad.location.manager.lib.Interfaces.LocationServiceInterface;
 import mad.location.manager.lib.Loggers.GeohashRTFilter;
@@ -57,7 +58,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   private NotificationManager mNotificationManager;
   private Location mLocation;
   private LocalRepository mRepository;
-  public ArrayList<Location> listLocations;
+  private ArrayList<Location> listLocations;
 
   public LocationUpdatesService() {
   }
@@ -223,6 +224,10 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   public FitActivity getCurrentFitActivity() {
     return mCurrentFitActivity;
+  }
+
+  public List<Location> getLocationsList() {
+    return listLocations;
   }
 
   private void saveFitActivityToDB() {

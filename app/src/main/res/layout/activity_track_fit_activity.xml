@@ -13,25 +13,25 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginBottom="8dp"
-            map:layout_constraintBottom_toTopOf="@+id/button_request_location"
+            map:layout_constraintBottom_toTopOf="@+id/button_start_tracking"
             map:layout_constraintEnd_toEndOf="parent"
             map:layout_constraintStart_toStartOf="parent"
             map:layout_constraintTop_toTopOf="parent"/>
 
   <Button
-      android:id="@+id/button_request_location"
+      android:id="@+id/button_start_tracking"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_marginBottom="8dp"
       android:layout_marginEnd="8dp"
       android:layout_marginStart="8dp"
       android:text="@string/start"
-      app:layout_constraintBottom_toTopOf="@+id/button_remove_locations"
+      app:layout_constraintBottom_toTopOf="@+id/button_stop_tracking"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"/>
 
   <Button
-      android:id="@+id/button_remove_locations"
+      android:id="@+id/button_stop_tracking"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_marginBottom="8dp"

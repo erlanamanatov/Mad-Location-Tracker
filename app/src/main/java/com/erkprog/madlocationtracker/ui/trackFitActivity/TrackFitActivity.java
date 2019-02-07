@@ -84,16 +84,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       mService = binder.getService();
       mBound = true;
       mPresenter.onServiceConnected(Utils.requestingLocationUpdates(TrackFitActivity.this));
-//      if (Utils.requestingLocationUpdates(TrackFitActivity.this) && mService.getCurrentLocation() != null && mMap != null) {
-//        zoomMapTo(mService.getCurrentLocation());
-//        drawPositionMarker(mService.getCurrentLocation());
-//        if (mService.getCurrentFitActivity() != null) {
-//          chronometer.setBase(
-//              SystemClock.elapsedRealtime() - (System.currentTimeMillis() - mService.getCurrentFitActivity().getStartTime().getTime()));
-//          chronometer.start();
-//          tvDistance.setText(Utils.getFormattedDistance(mService.getCurrentFitActivity().getDistance()));
-//        }
-//      }
     }
 
     @Override
@@ -122,15 +112,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   public void showCurrentPosition(Location location) {
     zoomMapTo(location);
     drawPositionMarker(location);
-
-    //TODO: create another method
-    if (mService.getCurrentFitActivity() != null) {
-      chronometer.setBase(
-          SystemClock.elapsedRealtime() - (System.currentTimeMillis() - mService.getCurrentFitActivity().getStartTime().getTime()));
-      chronometer.start();
-      tvDistance.setText(Utils.getFormattedDistance(mService.getCurrentFitActivity().getDistance()));
-    }
-
+    drawLocationAccuracyCircle(location);
   }
 
   @Override
@@ -141,6 +123,11 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   @Override
   public FitActivity getCurrentFitActivity() {
     return mService != null ? mService.getCurrentFitActivity() : null;
+  }
+
+  @Override
+  public List<Location> getLocationsList() {
+    return mService != null ? mService.getLocationsList() : null;
   }
 
   @Override
@@ -167,9 +154,9 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   }
 
   private void init() {
-    buttonRequestLocationUpdates = findViewById(R.id.button_request_location);
+    buttonRequestLocationUpdates = findViewById(R.id.button_start_tracking);
     buttonRequestLocationUpdates.setOnClickListener(this);
-    buttonRemoveLocationUpdates = findViewById(R.id.button_remove_locations);
+    buttonRemoveLocationUpdates = findViewById(R.id.button_stop_tracking);
     buttonRemoveLocationUpdates.setOnClickListener(this);
     mFitActivityReceiver = new FitActivityReceiver();
     userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
@@ -214,10 +201,10 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   @Override
   public void onClick(View v) {
     switch (v.getId()) {
-      case R.id.button_request_location:
+      case R.id.button_start_tracking:
         if (isGpsPersmissionGranted()) {
           if (isGpsEnabled()) {
-            startTracking();
+            mPresenter.onStartTrackingClicked();
           } else {
             showTurnGpsOnDialog();
           }
@@ -226,18 +213,24 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
         }
         break;
 
-      case R.id.button_remove_locations:
-        mService.stopTracking();
-        chronometer.stop();
+      case R.id.button_stop_tracking:
+        mPresenter.onStopTrackingClicked();
         break;
     }
   }
 
-  private void startTracking() {
+  @Override
+  public void startTracking() {
     mService.startTracking();
     tvDistance.setText(getString(R.string.zero_meters));
     chronometer.setBase(SystemClock.elapsedRealtime());
     chronometer.start();
+  }
+
+  @Override
+  public void stopTracking() {
+    mService.stopTracking();
+    chronometer.stop();
   }
 
   private boolean isGpsEnabled() {
@@ -263,7 +256,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     builder.show();
   }
 
-  private void setButtonsState(boolean requestingLocationUpdates) {
+  @Override
+  public void setButtonsState(boolean requestingLocationUpdates) {
     if (requestingLocationUpdates) {
       buttonRequestLocationUpdates.setEnabled(false);
       buttonRemoveLocationUpdates.setEnabled(true);
@@ -278,9 +272,9 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     if (requestCode == REQUEST_GPS) {
       if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-        startTracking();
+//        startTracking();
       } else {
-        Toast.makeText(this, "Location Permission denied", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Access to device's location is required", Toast.LENGTH_LONG).show();
       }
     }
   }
@@ -288,7 +282,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   @Override
   public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
     if (key.equals(Utils.KEY_REQUESTING_LOCATION_UPDATES)) {
-      setButtonsState(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES, false));
+      mPresenter.onLocationUpdatesStatusChanged(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES, false));
+//      setButtonsState(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES, false));
     }
   }
 
@@ -329,7 +324,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     }
   }
 
-  private void addPolyline(List<Location> locationList) {
+  @Override
+  public void showRoute(List<Location> locationList) {
     if (runningPathPolyline == null) {
       if (locationList.size() > 1) {
         PolylineOptions options = new PolylineOptions()
@@ -360,23 +356,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     public void onReceive(Context context, Intent intent) {
       FitActivity usersActivity = intent.getParcelableExtra(LocationUpdatesService.EXTRA_FIT_ACTIVITY);
       Location newLocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
-
-      // the user has not started tracking new activity yet
-      if (usersActivity == null && newLocation != null) {
-        drawPositionMarker(newLocation);
-        zoomMapTo(newLocation);
-      }
-
-      // Tracking user's activity
-      if (usersActivity != null && newLocation != null) {
-        tvDistance.setText(Utils.getFormattedDistance(usersActivity.getDistance()));
-        drawLocationAccuracyCircle(newLocation);
-        drawPositionMarker(newLocation);
-        if (mService.listLocations != null) {
-          addPolyline(mService.listLocations);
-        }
-        zoomMapTo(newLocation);
-      }
+      mPresenter.onBroadcastReceived(usersActivity, newLocation);
     }
   }
 

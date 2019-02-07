@@ -6,8 +6,9 @@ import com.erkprog.madlocationtracker.ILifeCycle;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 
 import java.util.Date;
+import java.util.List;
 
-public class TrackActivityContract {
+class TrackActivityContract {
 
   interface View {
 
@@ -19,9 +20,19 @@ public class TrackActivityContract {
 
     FitActivity getCurrentFitActivity();
 
+    List<Location> getLocationsList();
+
     void showDistance(String distance);
 
     void showDuration(Date startDate);
+
+    void startTracking();
+
+    void stopTracking();
+
+    void setButtonsState(boolean requestingLocationUpdates);
+
+    void showRoute(List<Location> locations);
   }
 
   interface Presenter extends ILifeCycle<View> {
@@ -30,5 +41,12 @@ public class TrackActivityContract {
 
     void onServiceConnected(boolean isGettingLocationUpdates);
 
+    void onStartTrackingClicked();
+
+    void onStopTrackingClicked();
+
+    void onLocationUpdatesStatusChanged(boolean requestingLocationUpdates);
+
+    void onBroadcastReceived(FitActivity usersActivity, Location newLocation);
   }
 }
