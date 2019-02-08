@@ -148,20 +148,10 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
         .findFragmentById(R.id.active_map);
     mapFragment.getMapAsync(this);
-    init();
+    initViews();
+    mFitActivityReceiver = new FitActivityReceiver();
     mPresenter = new TrackActivityPresenter();
     mPresenter.bind(this);
-  }
-
-  private void init() {
-    buttonRequestLocationUpdates = findViewById(R.id.button_start_tracking);
-    buttonRequestLocationUpdates.setOnClickListener(this);
-    buttonRemoveLocationUpdates = findViewById(R.id.button_stop_tracking);
-    buttonRemoveLocationUpdates.setOnClickListener(this);
-    mFitActivityReceiver = new FitActivityReceiver();
-    userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
-    tvDistance = findViewById(R.id.cr_act_distance);
-    chronometer = findViewById(R.id.cr_act_time);
   }
 
   @Override
@@ -199,27 +189,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   }
 
   @Override
-  public void onClick(View v) {
-    switch (v.getId()) {
-      case R.id.button_start_tracking:
-        if (isGpsPersmissionGranted()) {
-          if (isGpsEnabled()) {
-            mPresenter.onStartTrackingClicked();
-          } else {
-            showTurnGpsOnDialog();
-          }
-        } else {
-          requestGpsPermission();
-        }
-        break;
-
-      case R.id.button_stop_tracking:
-        mPresenter.onStopTrackingClicked();
-        break;
-    }
-  }
-
-  @Override
   public void startTracking() {
     mService.startTracking();
     tvDistance.setText(getString(R.string.zero_meters));
@@ -233,29 +202,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     chronometer.stop();
   }
 
-  private boolean isGpsEnabled() {
-    LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-    return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-  }
-
-  private boolean isGpsPersmissionGranted() {
-    return ActivityCompat.checkSelfPermission(TrackFitActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-  }
-
-  private void requestGpsPermission() {
-    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_GPS);
-  }
-
-  private void showTurnGpsOnDialog() {
-    AlertDialog.Builder builder = new AlertDialog.Builder(this)
-        .setMessage(R.string.turn_on_gps)
-        .setTitle(R.string.gps_disabled)
-        .setPositiveButton(R.string.to_settings, (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
-        .setNegativeButton(R.string.cancel, (dialog, which) ->
-            Toast.makeText(TrackFitActivity.this, getString(R.string.turn_on_gps_to_get_updates), Toast.LENGTH_SHORT).show());
-    builder.show();
-  }
-
   @Override
   public void setButtonsState(boolean requestingLocationUpdates) {
     if (requestingLocationUpdates) {
@@ -264,26 +210,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     } else {
       buttonRequestLocationUpdates.setEnabled(true);
       buttonRemoveLocationUpdates.setEnabled(false);
-    }
-  }
-
-  @Override
-  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    if (requestCode == REQUEST_GPS) {
-      if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//        startTracking();
-      } else {
-        Toast.makeText(this, "Access to device's location is required", Toast.LENGTH_LONG).show();
-      }
-    }
-  }
-
-  @Override
-  public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-    if (key.equals(Utils.KEY_REQUESTING_LOCATION_UPDATES)) {
-      mPresenter.onLocationUpdatesStatusChanged(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES, false));
-//      setButtonsState(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES, false));
     }
   }
 
@@ -351,6 +277,69 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     return points;
   }
 
+  @Override
+  public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    if (key.equals(Utils.KEY_REQUESTING_LOCATION_UPDATES)) {
+      mPresenter.onLocationUpdatesStatusChanged(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES, false));
+    }
+  }
+
+  @Override
+  public void onClick(View v) {
+    switch (v.getId()) {
+      case R.id.button_start_tracking:
+        if (isGpsPersmissionGranted()) {
+          if (isGpsEnabled()) {
+            mPresenter.onStartTrackingClicked();
+          } else {
+            showTurnGpsOnDialog();
+          }
+        } else {
+          requestGpsPermission();
+        }
+        break;
+
+      case R.id.button_stop_tracking:
+        mPresenter.onStopTrackingClicked();
+        break;
+    }
+  }
+
+  private boolean isGpsEnabled() {
+    LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+    return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+  }
+
+  private boolean isGpsPersmissionGranted() {
+    return ActivityCompat.checkSelfPermission(TrackFitActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+  }
+
+  private void requestGpsPermission() {
+    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_GPS);
+  }
+
+  private void showTurnGpsOnDialog() {
+    AlertDialog.Builder builder = new AlertDialog.Builder(this)
+        .setMessage(R.string.turn_on_gps)
+        .setTitle(R.string.gps_disabled)
+        .setPositiveButton(R.string.to_settings, (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
+        .setNegativeButton(R.string.cancel, (dialog, which) ->
+            Toast.makeText(TrackFitActivity.this, getString(R.string.turn_on_gps_to_get_updates), Toast.LENGTH_SHORT).show());
+    builder.show();
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    if (requestCode == REQUEST_GPS) {
+      if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        mPresenter.onStartTrackingClicked();
+      } else {
+        Toast.makeText(this, "Access to device's location is required", Toast.LENGTH_LONG).show();
+      }
+    }
+  }
+
   private class FitActivityReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -358,6 +347,16 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       Location newLocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
       mPresenter.onBroadcastReceived(usersActivity, newLocation);
     }
+  }
+
+  private void initViews() {
+    buttonRequestLocationUpdates = findViewById(R.id.button_start_tracking);
+    buttonRequestLocationUpdates.setOnClickListener(this);
+    buttonRemoveLocationUpdates = findViewById(R.id.button_stop_tracking);
+    buttonRemoveLocationUpdates.setOnClickListener(this);
+    userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
+    tvDistance = findViewById(R.id.cr_act_distance);
+    chronometer = findViewById(R.id.cr_act_time);
   }
 
   @Override
