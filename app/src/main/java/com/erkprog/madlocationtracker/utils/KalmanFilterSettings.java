@@ -23,8 +23,8 @@ public class KalmanFilterSettings {
     return new KalmanLocationService.Settings(mad.location.manager.lib.Commons.Utils.ACCELEROMETER_DEFAULT_DEVIATION,
         FOREGROUND_GPS_MIN_DISTANCE,
         FOREGROUND_GPS_MIN_TIME,
-        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
-        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT,
+        0,
+        0,
         mad.location.manager.lib.Commons.Utils.SENSOR_DEFAULT_FREQ_HZ,
         null, false, mad.location.manager.lib.Commons.Utils.DEFAULT_VEL_FACTOR, mad.location.manager.lib.Commons.Utils.DEFAULT_POS_FACTOR);
   }
@@ -33,8 +33,8 @@ public class KalmanFilterSettings {
     return new KalmanLocationService.Settings(mad.location.manager.lib.Commons.Utils.ACCELEROMETER_DEFAULT_DEVIATION,
         BACKGROUND_GPS_MIN_DISTANCE,
         BACKGROUND_GPS_MIN_TIME,
-        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_PREC,
-        mad.location.manager.lib.Commons.Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT,
+        0,
+        0,
         mad.location.manager.lib.Commons.Utils.SENSOR_DEFAULT_FREQ_HZ,
         null, false, mad.location.manager.lib.Commons.Utils.DEFAULT_VEL_FACTOR, mad.location.manager.lib.Commons.Utils.DEFAULT_POS_FACTOR);
   }
