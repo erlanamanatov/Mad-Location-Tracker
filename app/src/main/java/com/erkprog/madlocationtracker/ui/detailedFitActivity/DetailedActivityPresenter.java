@@ -4,6 +4,7 @@ import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
+import com.erkprog.madlocationtracker.utils.Utils;
 
 import java.util.List;
 
@@ -21,6 +22,17 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
   DetailedActivityPresenter(LocalRepository repository, FitActivity fitActivity) {
     mRepository = repository;
     mFitActivity = fitActivity;
+  }
+
+  @Override
+  public void processFitActivity(FitActivity fitActivity) {
+    float distance = fitActivity.getDistance();
+    long totalDurationMillis = fitActivity.getEndTime().getTime() - fitActivity.getStartTime().getTime();
+    mView.showDistance(Utils.getFormattedDistance(distance));
+    mView.showDuration(Utils.getFormattedTotalDuration(totalDurationMillis));
+    float avgSpeed = distance / ((float) totalDurationMillis / 1000);
+    avgSpeed = avgSpeed * 3600 / 1000;
+    mView.showAvgSpeed(Utils.getFormattedSpeed(avgSpeed));
   }
 
   @Override

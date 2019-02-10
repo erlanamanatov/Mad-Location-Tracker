@@ -50,7 +50,7 @@ public class FitActivityAdapter extends RecyclerView.Adapter<FitActivityAdapter.
     );
 
     viewHolder.tvTime.setText(
-        timeDiff != -1 ? Utils.getTotalDuration(timeDiff) : "?"
+        timeDiff != -1 ? Utils.getFormattedTotalDuration(timeDiff) : "?"
     );
 
     viewHolder.tvDistance.setText(

@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
@@ -34,6 +35,10 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   private static final String KEY_FIT_ACTIVITY = "detailedFitActivity.fitactivjity";
   private static final float WIDTH_OF_ROUTE = 25;
 
+  private TextView tvDistance;
+  private TextView tvDuration;
+  private TextView tvAvgSpeed;
+
   private GoogleMap mMap;
   private static final int MAP_PADDING = 80;
 
@@ -47,14 +52,15 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
         .findFragmentById(R.id.map);
     mapFragment.getMapAsync(this);
 
+    tvDistance = findViewById(R.id.act_detail_distance);
+    tvDuration = findViewById(R.id.act_detail_duration);
+    tvAvgSpeed = findViewById(R.id.act_detail_speed);
+
     FitActivity fitActivity = getIntent().getParcelableExtra(KEY_FIT_ACTIVITY);
-    ((TextView) findViewById(R.id.act_detail_distance))
-        .setText(Utils.getFormattedDistance(fitActivity.getDistance()));
-    ((TextView) findViewById(R.id.act_detail_duration))
-        .setText(Utils.getTotalDuration(fitActivity.getEndTime().getTime() - fitActivity.getStartTime().getTime()));
 
     mPresenter = new DetailedActivityPresenter(AppApplication.getInstance().getRepository(), fitActivity);
     mPresenter.bind(this);
+    mPresenter.processFitActivity(fitActivity);
   }
 
   @Override
@@ -64,6 +70,21 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mMap.getUiSettings().setTiltGesturesEnabled(false);
     mMap.setOnMarkerClickListener(marker -> true);
     mPresenter.getLocations();
+  }
+
+  @Override
+  public void showDuration(String totalDuration) {
+    tvDuration.setText(totalDuration);
+  }
+
+  @Override
+  public void showDistance(String distance) {
+    tvDistance.setText(distance);
+  }
+
+  @Override
+  public void showAvgSpeed(String formattedSpeed) {
+    tvAvgSpeed.setText(formattedSpeed);
   }
 
   @Override

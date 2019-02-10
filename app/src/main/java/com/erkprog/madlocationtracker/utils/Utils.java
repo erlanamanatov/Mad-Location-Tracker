@@ -26,15 +26,33 @@ public class Utils {
   }
 
   public static String getFormattedDate(Date resourceDate) {
-    SimpleDateFormat formatter = new SimpleDateFormat("EEEE, MMM d", new Locale("en"));
-    return formatter.format(resourceDate);
+    try {
+      SimpleDateFormat formatter = new SimpleDateFormat("EEEE, MMM d", new Locale("en"));
+      return formatter.format(resourceDate);
+    } catch (Exception e) {
+      return "?";
+    }
   }
 
-  public static String getTotalDuration(long diff) {
-    long diffSeconds = diff / 1000 % 60;
-    long diffMinutes = diff / (60 * 1000) % 60;
-    long diffHours = diff / (60 * 60 * 1000);
-    return String.format(Locale.UK, "%dh %dm %ds", diffHours, diffMinutes, diffSeconds);
+  public static String getFormattedTotalDuration(long diff) {
+    try {
+      long diffSeconds = diff / 1000 % 60;
+      long diffMinutes = diff / (60 * 1000) % 60;
+      long diffHours = diff / (60 * 60 * 1000);
+      return String.format(Locale.UK, "%dh %dm %ds", diffHours, diffMinutes, diffSeconds);
+    } catch (Exception e) {
+      return "?";
+    }
+  }
+
+  public static String getFormattedSpeed(float avgSpeed) {
+    try {
+      String unit = "km/h";
+      return String.format(Locale.UK, "%.2f %s", avgSpeed, unit);
+    } catch (Exception e) {
+      return "?";
+    }
+
   }
 
   public static long getBaseForChronometer(Date startTimeOfActivity) {
@@ -50,13 +68,18 @@ public class Utils {
   }
 
   public static String getFormattedDistance(float distance) {
-    String unit = "";
-    if (distance > 1000) {
-      unit = "km";
-      distance = distance / 1000;
-    } else {
-      unit = "m";
+    try {
+      String unit;
+      if (distance > 1000) {
+        unit = "km";
+        distance = distance / 1000;
+      } else {
+        unit = "m";
+      }
+      return String.format(Locale.UK, "%.2f %s", distance, unit);
+    } catch (Exception e) {
+      return "?";
     }
-    return String.format(Locale.UK, "%.2f %s", distance, unit);
   }
+
 }

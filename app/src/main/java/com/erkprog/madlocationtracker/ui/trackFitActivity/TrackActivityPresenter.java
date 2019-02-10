@@ -11,8 +11,10 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter {
 
   @Override
   public void onServiceConnected(boolean isGettingLocationUpdates) {
-    if (isGettingLocationUpdates && mView.getCurrentLocation() != null && mView.isMapReady()) {
-      mView.showCurrentPosition(mView.getCurrentLocation());
+    if (isGettingLocationUpdates) {
+      if (mView.getCurrentLocation() != null && mView.isMapReady()) {
+        mView.showCurrentPosition(mView.getCurrentLocation());
+      }
       if (mView.getCurrentFitActivity() != null) {
         mView.showDistance(Utils.getFormattedDistance(mView.getCurrentFitActivity().getDistance()));
         mView.showDuration(mView.getCurrentFitActivity().getStartTime());
