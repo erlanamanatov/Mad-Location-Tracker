@@ -35,8 +35,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
 
     trackFitActivity = findViewById(R.id.floatingActionButton);
     trackFitActivity.setOnClickListener(v -> {
-      Intent newFitActivity = new Intent(MainActivity.this, TrackFitActivity.class);
-      startActivity(newFitActivity);
+      mPresenter.onTrackActivityClicked();
     });
 
     mPresenter = new MainPresenter(AppApplication.getInstance().getRepository());
@@ -61,6 +60,12 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
   @Override
   public void startDetailedFitActivity(FitActivity fitActivity) {
     startActivity(DetailedFitActivity.getIntent(this, fitActivity));
+  }
+
+  @Override
+  public void startTrackingActivity() {
+    Intent newFitActivity = new Intent(MainActivity.this, TrackFitActivity.class);
+    startActivity(newFitActivity);
   }
 
   @Override

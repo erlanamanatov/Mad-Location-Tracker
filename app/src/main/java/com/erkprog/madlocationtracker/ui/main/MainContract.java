@@ -15,6 +15,7 @@ class MainContract {
 
     void showMessage(int resId);
 
+    void startTrackingActivity();
   }
 
   interface Presenter extends ILifeCycle<View> {
@@ -24,5 +25,7 @@ class MainContract {
     void loadFitActivities();
 
     void onFitActivityClicked(FitActivity fitActivity);
+
+    void onTrackActivityClicked();
   }
 }

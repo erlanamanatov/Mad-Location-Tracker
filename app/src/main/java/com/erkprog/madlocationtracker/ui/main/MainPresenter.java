@@ -57,6 +57,11 @@ public class MainPresenter implements MainContract.Presenter {
   }
 
   @Override
+  public void onTrackActivityClicked() {
+    mView.startTrackingActivity();
+  }
+
+  @Override
   public void bind(MainContract.View view) {
     mView = view;
   }
