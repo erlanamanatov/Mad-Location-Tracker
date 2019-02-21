@@ -2,6 +2,7 @@ package com.erkprog.madlocationtracker.data.entity;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -11,6 +12,9 @@ import java.util.Date;
 
 @Entity(tableName = "Activities")
 public class FitActivity implements Parcelable {
+
+  public static final int STATUS_TRACKING = 1;
+  public static final int STATUS_PAUSED = 2;
 
   @PrimaryKey(autoGenerate = true)
   public long id;
@@ -25,6 +29,9 @@ public class FitActivity implements Parcelable {
 
   private float distance;
 
+  @Ignore
+  private int status;
+
   public FitActivity() {
 
   }
@@ -32,6 +39,7 @@ public class FitActivity implements Parcelable {
   public FitActivity(long id) {
     this.id = id;
     this.startTime = Calendar.getInstance().getTime();
+    this.status = STATUS_TRACKING;
   }
 
   public Date getStartTime() {
@@ -74,6 +82,14 @@ public class FitActivity implements Parcelable {
     return id;
   }
 
+  public int getStatus() {
+    return status;
+  }
+
+  public void setStatus(int status) {
+    this.status = status;
+  }
+
   @Override
   public String toString() {
     return "FitActivity{" +
@@ -81,6 +97,7 @@ public class FitActivity implements Parcelable {
         ", startTime=" + startTime +
         ", endTime=" + endTime +
         ", distance=" + distance +
+        ", status" + status +
         '}';
   }
 
@@ -90,6 +107,7 @@ public class FitActivity implements Parcelable {
     this.startTime = new Date(in.readLong());
     this.endTime = new Date(in.readLong());
     this.distance = in.readFloat();
+    this.status = in.readInt();
   }
 
   @Override
@@ -104,6 +122,7 @@ public class FitActivity implements Parcelable {
     dest.writeLong(this.startTime.getTime());
     dest.writeLong(this.endTime.getTime());
     dest.writeFloat(this.distance);
+    dest.writeInt(this.status);
   }
 
   public static final Parcelable.Creator<FitActivity> CREATOR = new Parcelable.Creator<FitActivity>() {
