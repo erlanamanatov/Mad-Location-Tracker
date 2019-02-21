@@ -137,8 +137,11 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   private void onNewLocation(Location location) {
     if (mCurrentFitActivity.getStatus() == FitActivity.STATUS_TRACKING) {
       mGeohashRTFilter.filter(location);
-      mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
+//      mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
       listLocations.add(location);
+      if (mLocation != null) {
+        mCurrentFitActivity.addDistance(location.distanceTo(mLocation));
+      }
     }
     mLocation = location;
     Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + mFitActivityId);
@@ -185,14 +188,14 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     try {
       Utils.setRequestingLocationUpdates(this, false);
       ServicesHelper.getLocationService(this, KalmanLocationService::stop);
-      mGeohashRTFilter.stop();
-      mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
       Utils.logd(TAG, " Remove location updates, distanceAsIs " + mGeohashRTFilter.getDistanceAsIs());
       Utils.logd(TAG, " Remove location updates, distanceAsIsHp " + mGeohashRTFilter.getDistanceAsIsHP());
       Utils.logd(TAG, " Remove location updates, distanceGeoFiltered " + mGeohashRTFilter.getDistanceGeoFiltered());
       Utils.logd(TAG, " Remove location updates, distanceGeoFilteredHp " + mGeohashRTFilter.getDistanceGeoFilteredHP());
       Utils.logd(TAG, " Remove location upgates, size of filtered locations list: " + Integer.toString(mGeohashRTFilter.getGeoFilteredTrack().size()));
       mServiceHandler.post(() -> {
+        mGeohashRTFilter.stop();
+//        mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
         mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter.getGeoFilteredTrack());
         Utils.logd(TAG, " geofiltered locations saved to DB");
         saveFitActivityToDB();
@@ -281,6 +284,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public void continueTracking() {
     if (mCurrentFitActivity != null) {
       mCurrentFitActivity.setStatus(FitActivity.STATUS_TRACKING);
+      if (mLocation != null) {
+        mGeohashRTFilter.filter(mLocation);
+      }
     }
   }
 
