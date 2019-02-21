@@ -23,13 +23,29 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter {
   }
 
   @Override
-  public void onStartTrackingClicked() {
-    mView.startTracking();
+  public void onBtStartClicked() {
+    if (mView.getCurrentFitActivity() == null) {
+      mView.startTracking();
+    } else {
+      if (mView.getCurrentFitActivity().getStatus() == FitActivity.STATUS_PAUSED) {
+        mView.continueTracking();
+      }
+    }
+//    mView.startTracking();
   }
 
   @Override
-  public void onStopTrackingClicked() {
-    mView.stopTracking();
+  public void onBtStopClicked() {
+    if (mView.getCurrentFitActivity() != null) {
+      switch (mView.getCurrentFitActivity().getStatus()) {
+        case FitActivity.STATUS_PAUSED:
+          mView.stopTracking();
+          break;
+        case FitActivity.STATUS_TRACKING:
+          mView.pauseTracking();
+          break;
+      }
+    }
   }
 
   @Override

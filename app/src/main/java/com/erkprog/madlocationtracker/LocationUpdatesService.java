@@ -135,10 +135,12 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   private void onNewLocation(Location location) {
-    mGeohashRTFilter.filter(location);
-    mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
+    if (mCurrentFitActivity.getStatus() == FitActivity.STATUS_TRACKING) {
+      mGeohashRTFilter.filter(location);
+      mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
+      listLocations.add(location);
+    }
     mLocation = location;
-    listLocations.add(location);
     Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + mFitActivityId);
     Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
     sendBroadcast(mCurrentFitActivity, location);
@@ -263,7 +265,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       // tracking user's activity
       onNewLocation(location);
     } else {
-      // display current position, the user has not started activity yet
+      // display current position, the user has not started tracking activity yet
       // TODO: create new broadcast to avoid null
       sendBroadcast(null, location);
     }
@@ -274,6 +276,18 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     Utils.logd(TAG, "Service on destroy");
     handlerThread.quitSafely();
     ServicesHelper.removeLocationServiceInterface(this);
+  }
+
+  public void continueTracking() {
+    if (mCurrentFitActivity != null) {
+      mCurrentFitActivity.setStatus(FitActivity.STATUS_TRACKING);
+    }
+  }
+
+  public void pauseTracking() {
+    if (mCurrentFitActivity != null) {
+      mCurrentFitActivity.setStatus(FitActivity.STATUS_PAUSED);
+    }
   }
 
   public class LocalBinder extends Binder {

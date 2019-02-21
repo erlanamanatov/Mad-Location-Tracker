@@ -56,7 +56,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     TrackActivityContract.View {
   private static final String TAG = "TrackFitActivity";
 
-  Button buttonRequestLocationUpdates, buttonRemoveLocationUpdates;
+  Button btStart, btStop;
   TextView tvDistance;
   Chronometer chronometer;
 
@@ -190,6 +190,10 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   public void startTracking() {
+    btStart.setText(R.string.start);
+    btStart.setEnabled(false);
+    btStop.setText(R.string.stop);
+    btStop.setEnabled(true);
     mService.startTracking();
     tvDistance.setText(getString(R.string.zero_meters));
     chronometer.setBase(SystemClock.elapsedRealtime());
@@ -197,7 +201,31 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   }
 
   @Override
+  public void continueTracking() {
+    btStart.setText(R.string.start);
+    btStart.setEnabled(false);
+    btStop.setText(R.string.stop);
+    btStop.setEnabled(true);
+    chronometer.start();
+    mService.continueTracking();
+  }
+
+  @Override
+  public void pauseTracking() {
+    btStart.setText(R.string.resume);
+    btStart.setEnabled(true);
+    btStop.setText(R.string.finish);
+    btStop.setEnabled(true);
+    chronometer.stop();
+    mService.pauseTracking();
+  }
+
+  @Override
   public void stopTracking() {
+    btStart.setText(R.string.start);
+    btStart.setEnabled(true);
+    btStop.setText(R.string.stop);
+    btStop.setEnabled(false);
     mService.stopTracking();
     chronometer.stop();
   }
@@ -205,11 +233,11 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   @Override
   public void setButtonsState(boolean requestingLocationUpdates) {
     if (requestingLocationUpdates) {
-      buttonRequestLocationUpdates.setEnabled(false);
-      buttonRemoveLocationUpdates.setEnabled(true);
+      btStart.setEnabled(false);
+      btStop.setEnabled(true);
     } else {
-      buttonRequestLocationUpdates.setEnabled(true);
-      buttonRemoveLocationUpdates.setEnabled(false);
+      btStart.setEnabled(true);
+      btStop.setEnabled(false);
     }
   }
 
@@ -290,7 +318,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       case R.id.button_start_tracking:
         if (isGpsPersmissionGranted()) {
           if (isGpsEnabled()) {
-            mPresenter.onStartTrackingClicked();
+            mPresenter.onBtStartClicked();
           } else {
             showTurnGpsOnDialog();
           }
@@ -300,7 +328,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
         break;
 
       case R.id.button_stop_tracking:
-        mPresenter.onStopTrackingClicked();
+        mPresenter.onBtStopClicked();
         break;
     }
   }
@@ -333,7 +361,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     if (requestCode == REQUEST_GPS) {
       if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-        mPresenter.onStartTrackingClicked();
+        mPresenter.onBtStartClicked();
       } else {
         Toast.makeText(this, "Access to device's location is required", Toast.LENGTH_LONG).show();
       }
@@ -350,10 +378,10 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   }
 
   private void initViews() {
-    buttonRequestLocationUpdates = findViewById(R.id.button_start_tracking);
-    buttonRequestLocationUpdates.setOnClickListener(this);
-    buttonRemoveLocationUpdates = findViewById(R.id.button_stop_tracking);
-    buttonRemoveLocationUpdates.setOnClickListener(this);
+    btStart = findViewById(R.id.button_start_tracking);
+    btStart.setOnClickListener(this);
+    btStop = findViewById(R.id.button_stop_tracking);
+    btStop.setOnClickListener(this);
     userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
     tvDistance = findViewById(R.id.cr_act_distance);
     chronometer = findViewById(R.id.cr_act_time);

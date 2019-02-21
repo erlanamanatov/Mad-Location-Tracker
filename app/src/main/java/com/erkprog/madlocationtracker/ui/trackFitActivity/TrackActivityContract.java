@@ -28,6 +28,10 @@ class TrackActivityContract {
 
     void startTracking();
 
+    void pauseTracking();
+
+    void continueTracking();
+
     void stopTracking();
 
     void setButtonsState(boolean requestingLocationUpdates);
@@ -41,9 +45,9 @@ class TrackActivityContract {
 
     void onServiceConnected(boolean isGettingLocationUpdates);
 
-    void onStartTrackingClicked();
+    void onBtStartClicked();
 
-    void onStopTrackingClicked();
+    void onBtStopClicked();
 
     void onLocationUpdatesStatusChanged(boolean requestingLocationUpdates);
 
