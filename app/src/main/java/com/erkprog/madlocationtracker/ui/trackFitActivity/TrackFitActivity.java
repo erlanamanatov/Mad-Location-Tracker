@@ -59,6 +59,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   Button btStart, btStop;
   TextView tvDistance;
   Chronometer chronometer;
+  private long pausedTime;
 
   private TrackActivityContract.Presenter mPresenter;
 
@@ -206,6 +207,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     btStart.setEnabled(false);
     btStop.setText(R.string.stop);
     btStop.setEnabled(true);
+    long pauseDuration = SystemClock.elapsedRealtime() - pausedTime;
+    chronometer.setBase(chronometer.getBase() + pauseDuration);
     chronometer.start();
     mService.continueTracking();
   }
@@ -216,6 +219,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     btStart.setEnabled(true);
     btStop.setText(R.string.finish);
     btStop.setEnabled(true);
+    pausedTime = SystemClock.elapsedRealtime();
     chronometer.stop();
     mService.pauseTracking();
   }
