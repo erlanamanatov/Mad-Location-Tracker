@@ -183,11 +183,12 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     });
   }
 
-  public void stopTracking() {
+  public void stopTracking(long trackingDuration) {
     Utils.logd(TAG, "Removing location updates");
     try {
       Utils.setRequestingLocationUpdates(this, false);
       ServicesHelper.getLocationService(this, KalmanLocationService::stop);
+      mCurrentFitActivity.setTrackingDuration(trackingDuration);
       Utils.logd(TAG, " Remove location updates, distanceAsIs " + mGeohashRTFilter.getDistanceAsIs());
       Utils.logd(TAG, " Remove location updates, distanceAsIsHp " + mGeohashRTFilter.getDistanceAsIsHP());
       Utils.logd(TAG, " Remove location updates, distanceGeoFiltered " + mGeohashRTFilter.getDistanceGeoFiltered());

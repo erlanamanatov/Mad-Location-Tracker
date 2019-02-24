@@ -34,7 +34,7 @@ public class Utils {
     }
   }
 
-  public static String getFormattedTotalDuration(long diff) {
+  public static String getFormattedDuration(long diff) {
     try {
       long diffSeconds = diff / 1000 % 60;
       long diffMinutes = diff / (60 * 1000) % 60;

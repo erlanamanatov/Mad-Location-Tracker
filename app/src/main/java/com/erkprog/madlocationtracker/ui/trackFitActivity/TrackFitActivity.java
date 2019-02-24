@@ -230,8 +230,9 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     btStart.setEnabled(true);
     btStop.setText(R.string.stop);
     btStop.setEnabled(false);
-    mService.stopTracking();
     chronometer.stop();
+    long trackingDuration = SystemClock.elapsedRealtime() - chronometer.getBase();
+    mService.stopTracking(trackingDuration);
   }
 
   @Override

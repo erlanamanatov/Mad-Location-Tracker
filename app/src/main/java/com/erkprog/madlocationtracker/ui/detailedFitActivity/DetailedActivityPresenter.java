@@ -29,7 +29,7 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
     float distance = fitActivity.getDistance();
     long totalDurationMillis = fitActivity.getEndTime().getTime() - fitActivity.getStartTime().getTime();
     mView.showDistance(Utils.getFormattedDistance(distance));
-    mView.showDuration(Utils.getFormattedTotalDuration(totalDurationMillis));
+    mView.showDuration(Utils.getFormattedDuration(totalDurationMillis));
     float avgSpeed = distance / ((float) totalDurationMillis / 1000);
     avgSpeed = avgSpeed * 3600 / 1000;
     mView.showAvgSpeed(Utils.getFormattedSpeed(avgSpeed));

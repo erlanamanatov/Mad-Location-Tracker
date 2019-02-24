@@ -7,6 +7,8 @@ import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.erkprog.madlocationtracker.utils.Utils;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -31,6 +33,9 @@ public class FitActivity implements Parcelable {
 
   @Ignore
   private int status;
+
+  @ColumnInfo(name = "tracking_duration")
+  private long trackingDuration;
 
   public FitActivity() {
 
@@ -90,6 +95,14 @@ public class FitActivity implements Parcelable {
     this.status = status;
   }
 
+  public long getTrackingDuration() {
+    return trackingDuration;
+  }
+
+  public void setTrackingDuration(long trackingDuration) {
+    this.trackingDuration = trackingDuration;
+  }
+
   @Override
   public String toString() {
     return "FitActivity{" +
@@ -98,6 +111,7 @@ public class FitActivity implements Parcelable {
         ", endTime=" + endTime +
         ", distance=" + distance +
         ", status" + status +
+        ", trackingDuration " + Utils.getFormattedDuration(trackingDuration) +
         '}';
   }
 
