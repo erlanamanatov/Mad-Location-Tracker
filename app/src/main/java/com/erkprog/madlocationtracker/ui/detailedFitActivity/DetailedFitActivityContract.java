@@ -6,7 +6,7 @@ import com.erkprog.madlocationtracker.data.entity.LocationItem;
 
 import java.util.List;
 
-public class DetailedFitActivityContract {
+class DetailedFitActivityContract {
 
   interface View {
 
@@ -19,6 +19,8 @@ public class DetailedFitActivityContract {
     void showDistance(String formattedDistance);
 
     void showAvgSpeed(String formattedSpeed);
+
+    void showTrackingTime(String formattedDuration);
   }
 
   interface Presenter extends ILifeCycle<View> {

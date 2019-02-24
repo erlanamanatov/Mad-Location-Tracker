@@ -12,72 +12,66 @@
             xmlns:map="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="4dp"
             map:layout_constraintBottom_toTopOf="@+id/act_detail_distance"
             map:layout_constraintEnd_toEndOf="parent"
             map:layout_constraintHorizontal_bias="0.0"
             map:layout_constraintStart_toStartOf="parent"
             map:layout_constraintTop_toTopOf="parent"
-            map:layout_constraintVertical_bias="1.0"
             tools:context=".ui.detailedFitActivity.DetailedFitActivity"/>
 
   <TextView
       android:id="@+id/textView"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginBottom="24dp"
+      android:layout_marginBottom="16dp"
       android:text="@string/distance"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintStart_toStartOf="@+id/act_detail_distance"/>
+      app:layout_constraintBottom_toTopOf="@+id/act_detail_speed"
+      app:layout_constraintStart_toStartOf="@+id/act_detail_speed"/>
 
   <TextView
       android:id="@+id/textView2"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginBottom="24dp"
-      android:text="@string/duration"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="@+id/act_detail_duration"/>
+      android:layout_marginBottom="16dp"
+      android:text="@string/total_duration"
+      app:layout_constraintBottom_toTopOf="@+id/act_detail_tracking_time"
+      app:layout_constraintEnd_toEndOf="@+id/act_detail_tracking_time"/>
 
   <TextView
       android:id="@+id/act_detail_distance"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginBottom="8dp"
-      android:layout_marginStart="16dp"
+      android:layout_marginBottom="4dp"
       android:textColor="@android:color/black"
       android:textSize="18sp"
       android:textStyle="bold"
       app:layout_constraintBottom_toTopOf="@+id/textView"
-      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintStart_toStartOf="@+id/textView"
       tools:text="23.23 Km"/>
 
   <TextView
       android:id="@+id/act_detail_duration"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginBottom="8dp"
-      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="4dp"
       android:textColor="@android:color/black"
       android:textSize="18sp"
       android:textStyle="bold"
       app:layout_constraintBottom_toTopOf="@+id/textView2"
-      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintEnd_toEndOf="@+id/textView2"
       tools:text="12h 12m"/>
 
   <TextView
       android:id="@+id/act_detail_speed"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginBottom="8dp"
-      android:layout_marginEnd="8dp"
-      android:layout_marginStart="8dp"
+      android:layout_marginBottom="4dp"
       android:textColor="@android:color/black"
       android:textSize="18sp"
       android:textStyle="bold"
       app:layout_constraintBottom_toTopOf="@+id/textView5"
-      app:layout_constraintEnd_toStartOf="@+id/act_detail_duration"
-      app:layout_constraintStart_toEndOf="@+id/act_detail_distance"
+      app:layout_constraintStart_toStartOf="@+id/textView5"
       tools:text="11 km/h"/>
 
   <TextView
@@ -85,8 +79,30 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_marginBottom="24dp"
+      android:layout_marginStart="24dp"
       android:text="Avg Speed"
       app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="@+id/act_detail_speed"
-      app:layout_constraintStart_toStartOf="@+id/act_detail_speed"/>
+      app:layout_constraintStart_toStartOf="parent"/>
+
+  <TextView
+      android:id="@+id/textView4"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="24dp"
+      android:layout_marginEnd="24dp"
+      android:text="@string/tracking_time"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"/>
+
+  <TextView
+      android:id="@+id/act_detail_tracking_time"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="4dp"
+      android:textColor="@android:color/black"
+      android:textSize="18sp"
+      android:textStyle="bold"
+      app:layout_constraintBottom_toTopOf="@+id/textView4"
+      app:layout_constraintEnd_toEndOf="@+id/textView4"
+      tools:text="6h 13m"/>
 </android.support.constraint.ConstraintLayout>

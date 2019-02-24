@@ -122,6 +122,7 @@ public class FitActivity implements Parcelable {
     this.endTime = new Date(in.readLong());
     this.distance = in.readFloat();
     this.status = in.readInt();
+    this.trackingDuration = in.readLong();
   }
 
   @Override
@@ -137,6 +138,7 @@ public class FitActivity implements Parcelable {
     dest.writeLong(this.endTime.getTime());
     dest.writeFloat(this.distance);
     dest.writeInt(this.status);
+    dest.writeLong(this.trackingDuration);
   }
 
   public static final Parcelable.Creator<FitActivity> CREATOR = new Parcelable.Creator<FitActivity>() {

@@ -7,7 +7,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
@@ -38,6 +37,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   private TextView tvDistance;
   private TextView tvDuration;
   private TextView tvAvgSpeed;
+  private TextView tvTrackingTime;
 
   private GoogleMap mMap;
   private static final int MAP_PADDING = 80;
@@ -55,6 +55,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     tvDistance = findViewById(R.id.act_detail_distance);
     tvDuration = findViewById(R.id.act_detail_duration);
     tvAvgSpeed = findViewById(R.id.act_detail_speed);
+    tvTrackingTime = findViewById(R.id.act_detail_tracking_time);
 
     FitActivity fitActivity = getIntent().getParcelableExtra(KEY_FIT_ACTIVITY);
 
@@ -85,6 +86,11 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   @Override
   public void showAvgSpeed(String formattedSpeed) {
     tvAvgSpeed.setText(formattedSpeed);
+  }
+
+  @Override
+  public void showTrackingTime(String trackingTime) {
+    tvTrackingTime.setText(trackingTime);
   }
 
   @Override

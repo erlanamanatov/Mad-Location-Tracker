@@ -33,6 +33,8 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
     float avgSpeed = distance / ((float) totalDurationMillis / 1000);
     avgSpeed = avgSpeed * 3600 / 1000;
     mView.showAvgSpeed(Utils.getFormattedSpeed(avgSpeed));
+    Utils.logd(TAG, Utils.getFormattedDuration(fitActivity.getTrackingDuration()));
+    mView.showTrackingTime(Utils.getFormattedDuration(fitActivity.getTrackingDuration()));
   }
 
   @Override
