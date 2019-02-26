@@ -143,15 +143,15 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   }
 
   @Override
-  public void showDuration(Date startDate) {
-    if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_PAUSED) {
-      chronometer.setBase(SystemClock.elapsedRealtime() - chController.getDuration());
-      pausedTime = SystemClock.elapsedRealtime();
-    }
-    if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_TRACKING) {
-      chronometer.setBase(chController.getBaseTime());
-      chronometer.start();
-    }
+  public void showDurationStatePaused() {
+    chronometer.setBase(SystemClock.elapsedRealtime() - chController.getDuration());
+    pausedTime = SystemClock.elapsedRealtime();
+  }
+
+  @Override
+  public void showDurationStateTracking() {
+    chronometer.setBase(chController.getBaseTime());
+    chronometer.start();
   }
 
   @Override

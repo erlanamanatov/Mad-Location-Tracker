@@ -5,7 +5,6 @@ import android.location.Location;
 import com.erkprog.madlocationtracker.ILifeCycle;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 
-import java.util.Date;
 import java.util.List;
 
 class TrackActivityContract {
@@ -24,7 +23,9 @@ class TrackActivityContract {
 
     void showDistance(String distance);
 
-    void showDuration(Date startDate);
+    void showDurationStatePaused();
+
+    void showDurationStateTracking();
 
     void startTracking();
 

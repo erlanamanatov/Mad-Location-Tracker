@@ -1,7 +1,6 @@
 package com.erkprog.madlocationtracker.ui.trackFitActivity;
 
 import android.location.Location;
-import android.util.Log;
 
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.utils.Utils;
@@ -15,7 +14,6 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter {
   @Override
   public void onServiceConnected(boolean isGettingLocationUpdates) {
     if (!isGettingLocationUpdates) {
-      Utils.logd(TAG, "set button to initial");
       mView.setButtonsState(TrackFitActivity.BT_STATE_INITIAL);
       return;
     }
@@ -26,29 +24,22 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter {
 
     if (mView.getCurrentFitActivity() != null) {
       mView.showDistance(Utils.getFormattedDistance(mView.getCurrentFitActivity().getDistance()));
-      mView.showDuration(mView.getCurrentFitActivity().getStartTime());
-      Utils.logd(TAG, "status " + mView.getCurrentFitActivity().getStatus());
+
+      // Set up buttons and time depending on activity's status
       if (mView.getCurrentFitActivity().getStatus() == FitActivity.STATUS_TRACKING) {
         mView.setButtonsState(TrackFitActivity.BT_STATE_TRACKING);
+        mView.showDurationStateTracking();
       }
       if (mView.getCurrentFitActivity().getStatus() == FitActivity.STATUS_PAUSED) {
         mView.setButtonsState(TrackFitActivity.BT_STATE_PAUSED);
+        mView.showDurationStatePaused();
+      }
+
+      //show route
+      if (mView.getLocationsList() != null && mView.isMapReady()) {
+        mView.showRoute(mView.getLocationsList());
       }
     }
-
-//    if (isGettingLocationUpdates) {
-//      if (mView.getCurrentLocation() != null && mView.isMapReady()) {
-//        mView.showCurrentPosition(mView.getCurrentLocation());
-//      }
-//      if (mView.getCurrentFitActivity() != null) {
-//        mView.showDistance(Utils.getFormattedDistance(mView.getCurrentFitActivity().getDistance()));
-//        mView.showDuration(mView.getCurrentFitActivity().getStartTime());
-//
-//      }
-//    } else {
-//      mView.setButtonsState(TrackFitActivity.BT_STATE_INITIAL);
-//    }
-
   }
 
   @Override
@@ -60,7 +51,6 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter {
         mView.continueTracking();
       }
     }
-//    mView.startTracking();
   }
 
   @Override
