@@ -39,11 +39,6 @@ public class FitActivityAdapter extends RecyclerView.Adapter<FitActivityAdapter.
   public void onBindViewHolder(@NonNull FitActivityViewHolder viewHolder, int i) {
     FitActivity fitActivity = mData.get(i);
     Date startTime = fitActivity.getStartTime();
-    Date endTime = fitActivity.getEndTime();
-//    long timeDiff = -1;
-//    if (startTime != null && endTime != null) {
-//      timeDiff = endTime.getTime() - startTime.getTime();
-//    }
 
     viewHolder.tvDate.setText(
         startTime != null ? Utils.getFormattedDate(startTime) : ""
@@ -51,7 +46,6 @@ public class FitActivityAdapter extends RecyclerView.Adapter<FitActivityAdapter.
 
     viewHolder.tvTime.setText(
         Utils.getFormattedDuration(fitActivity.getTrackingDuration())
-//        timeDiff != -1 ? Utils.getFormattedDuration(timeDiff) : "?"
     );
 
     viewHolder.tvDistance.setText(
