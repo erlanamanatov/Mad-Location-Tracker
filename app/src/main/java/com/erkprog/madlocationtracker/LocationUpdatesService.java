@@ -137,7 +137,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   private void onNewLocation(Location location) {
     if (mCurrentFitActivity.getStatus() == FitActivity.STATUS_TRACKING) {
       mGeohashRTFilter.filter(location);
-//      mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
       listLocations.add(location);
       if (mLocation != null) {
         mCurrentFitActivity.addDistance(location.distanceTo(mLocation));
@@ -196,7 +195,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       Utils.logd(TAG, " Remove location upgates, size of filtered locations list: " + Integer.toString(mGeohashRTFilter.getGeoFilteredTrack().size()));
       mServiceHandler.post(() -> {
         mGeohashRTFilter.stop();
-//        mCurrentFitActivity.setDistance((float) mGeohashRTFilter.getDistanceGeoFilteredHP());
         mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter.getGeoFilteredTrack());
         Utils.logd(TAG, " geofiltered locations saved to DB");
         saveFitActivityToDB();

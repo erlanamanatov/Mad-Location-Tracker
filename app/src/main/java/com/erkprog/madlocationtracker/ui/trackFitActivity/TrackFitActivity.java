@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 import com.erkprog.madlocationtracker.LocationUpdatesService;
 import com.erkprog.madlocationtracker.R;
-import com.erkprog.madlocationtracker.data.entity.FitChronometer;
+import com.erkprog.madlocationtracker.data.entity.ChronometerController;
 import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -65,7 +65,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   TextView tvDistance;
   Chronometer chronometer;
   private long pausedTime;
-  private FitChronometer mChronometer;
+  private ChronometerController chController;
 
   private TrackActivityContract.Presenter mPresenter;
 
@@ -144,14 +144,12 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   public void showDuration(Date startDate) {
-/*    chronometer.setBase(Utils.getBaseForChronometer(startDate));
-    chronometer.start();*/
     if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_PAUSED) {
-      chronometer.setBase(SystemClock.elapsedRealtime() - mChronometer.getDuration());
+      chronometer.setBase(SystemClock.elapsedRealtime() - chController.getDuration());
       pausedTime = SystemClock.elapsedRealtime();
     }
     if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_TRACKING) {
-      chronometer.setBase(mChronometer.getBaseTime());
+      chronometer.setBase(chController.getBaseTime());
       chronometer.start();
     }
   }
@@ -174,7 +172,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     super.onStart();
     PreferenceManager.getDefaultSharedPreferences(this)
         .registerOnSharedPreferenceChangeListener(this);
-//    setButtonsState(Utils.requestingLocationUpdates(this));
     bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
         Context.BIND_AUTO_CREATE);
   }
@@ -206,10 +203,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   @Override
   public void startTracking() {
     setButtonsState(BT_STATE_TRACKING);
-//    btStart.setText(R.string.start);
-//    btStart.setEnabled(false);
-//    btStop.setText(R.string.stop);
-//    btStop.setEnabled(true);
     mService.startTracking();
     tvDistance.setText(getString(R.string.zero_meters));
     chronometer.setBase(SystemClock.elapsedRealtime());
@@ -219,10 +212,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   @Override
   public void continueTracking() {
     setButtonsState(BT_STATE_TRACKING);
-//    btStart.setText(R.string.start);
-//    btStart.setEnabled(false);
-//    btStop.setText(R.string.stop);
-//    btStop.setEnabled(true);
     long pauseDuration = SystemClock.elapsedRealtime() - pausedTime;
     chronometer.setBase(chronometer.getBase() + pauseDuration);
     chronometer.start();
@@ -232,10 +221,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   @Override
   public void pauseTracking() {
     setButtonsState(BT_STATE_PAUSED);
-//    btStart.setText(R.string.resume);
-//    btStart.setEnabled(true);
-//    btStop.setText(R.string.finish);
-//    btStop.setEnabled(true);
     pausedTime = SystemClock.elapsedRealtime();
     chronometer.stop();
     mService.pauseTracking();
@@ -244,10 +229,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   @Override
   public void stopTracking() {
     setButtonsState(BT_STATE_INITIAL);
-//    btStart.setText(R.string.start);
-//    btStart.setEnabled(true);
-//    btStop.setText(R.string.stop);
-//    btStop.setEnabled(false);
     chronometer.stop();
     long trackingDuration = SystemClock.elapsedRealtime() - chronometer.getBase();
     mService.stopTracking(trackingDuration);
@@ -276,16 +257,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
         btStop.setText(R.string.finish);
         break;
     }
-
-
-//    if (requestingLocationUpdates) {
-//      btStart.setEnabled(false);
-//      btStop.setEnabled(true);
-//    } else {
-//      btStart.setEnabled(true);
-//      btStop.setEnabled(false);
-//    }
-
   }
 
   private void drawPositionMarker(Location location) {
@@ -432,17 +403,17 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
     tvDistance = findViewById(R.id.cr_act_distance);
     chronometer = findViewById(R.id.cr_act_time);
-    mChronometer = FitChronometer.getInstance();
+    chController = ChronometerController.getInstance();
   }
 
   @Override
   protected void onDestroy() {
     if (Utils.requestingLocationUpdates(this)) {
       if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_TRACKING) {
-        mChronometer.setBaseTime(chronometer.getBase());
+        chController.setBaseTime(chronometer.getBase());
       }
       if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_PAUSED) {
-        mChronometer.setDuration(pausedTime - chronometer.getBase());
+        chController.setDuration(pausedTime - chronometer.getBase());
       }
     }
     mPresenter.unBind();

@@ -1,23 +1,20 @@
 package com.erkprog.madlocationtracker.data.entity;
 
-public class FitChronometer {
+public class ChronometerController {
 
-  private static FitChronometer instance;
+  private static ChronometerController instance;
 
   private long baseTime;
 
-  private long pausedTime;
-
   private long duration;
 
-  private FitChronometer() {
+  private ChronometerController() {
 
   }
 
-
-  public static FitChronometer getInstance() {
+  public static ChronometerController getInstance() {
     if (instance == null) {
-      instance = new FitChronometer();
+      instance = new ChronometerController();
     }
     return instance;
   }
@@ -28,14 +25,6 @@ public class FitChronometer {
 
   public void setBaseTime(long baseTime) {
     this.baseTime = baseTime;
-  }
-
-  public long getPausedTime() {
-    return pausedTime;
-  }
-
-  public void setPausedTime(long pausedTime) {
-    this.pausedTime = pausedTime;
   }
 
   public long getDuration() {
