@@ -56,6 +56,10 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     TrackActivityContract.View {
   private static final String TAG = "TrackFitActivity";
 
+  public static final int BT_STATE_INITIAL = 5;
+  public static final int BT_STATE_TRACKING = 6;
+  public static final int BT_STATE_PAUSED = 7;
+
   Button btStart, btStop;
   TextView tvDistance;
   Chronometer chronometer;
@@ -160,7 +164,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     super.onStart();
     PreferenceManager.getDefaultSharedPreferences(this)
         .registerOnSharedPreferenceChangeListener(this);
-    setButtonsState(Utils.requestingLocationUpdates(this));
+//    setButtonsState(Utils.requestingLocationUpdates(this));
     bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
         Context.BIND_AUTO_CREATE);
   }
@@ -191,10 +195,11 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   public void startTracking() {
-    btStart.setText(R.string.start);
-    btStart.setEnabled(false);
-    btStop.setText(R.string.stop);
-    btStop.setEnabled(true);
+    setButtonsState(BT_STATE_TRACKING);
+//    btStart.setText(R.string.start);
+//    btStart.setEnabled(false);
+//    btStop.setText(R.string.stop);
+//    btStop.setEnabled(true);
     mService.startTracking();
     tvDistance.setText(getString(R.string.zero_meters));
     chronometer.setBase(SystemClock.elapsedRealtime());
@@ -203,10 +208,11 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   public void continueTracking() {
-    btStart.setText(R.string.start);
-    btStart.setEnabled(false);
-    btStop.setText(R.string.stop);
-    btStop.setEnabled(true);
+    setButtonsState(BT_STATE_TRACKING);
+//    btStart.setText(R.string.start);
+//    btStart.setEnabled(false);
+//    btStop.setText(R.string.stop);
+//    btStop.setEnabled(true);
     long pauseDuration = SystemClock.elapsedRealtime() - pausedTime;
     chronometer.setBase(chronometer.getBase() + pauseDuration);
     chronometer.start();
@@ -215,10 +221,11 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   public void pauseTracking() {
-    btStart.setText(R.string.resume);
-    btStart.setEnabled(true);
-    btStop.setText(R.string.finish);
-    btStop.setEnabled(true);
+    setButtonsState(BT_STATE_PAUSED);
+//    btStart.setText(R.string.resume);
+//    btStart.setEnabled(true);
+//    btStop.setText(R.string.finish);
+//    btStop.setEnabled(true);
     pausedTime = SystemClock.elapsedRealtime();
     chronometer.stop();
     mService.pauseTracking();
@@ -226,24 +233,49 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   public void stopTracking() {
-    btStart.setText(R.string.start);
-    btStart.setEnabled(true);
-    btStop.setText(R.string.stop);
-    btStop.setEnabled(false);
+    setButtonsState(BT_STATE_INITIAL);
+//    btStart.setText(R.string.start);
+//    btStart.setEnabled(true);
+//    btStop.setText(R.string.stop);
+//    btStop.setEnabled(false);
     chronometer.stop();
     long trackingDuration = SystemClock.elapsedRealtime() - chronometer.getBase();
     mService.stopTracking(trackingDuration);
   }
 
   @Override
-  public void setButtonsState(boolean requestingLocationUpdates) {
-    if (requestingLocationUpdates) {
-      btStart.setEnabled(false);
-      btStop.setEnabled(true);
-    } else {
-      btStart.setEnabled(true);
-      btStop.setEnabled(false);
+  public void setButtonsState(int state) {
+    Utils.logd(TAG, "setting button state " + state);
+    switch (state) {
+      case BT_STATE_INITIAL:
+        btStart.setEnabled(true);
+        btStart.setText(R.string.start);
+        btStop.setEnabled(false);
+        btStop.setText(R.string.stop);
+        break;
+      case BT_STATE_TRACKING:
+        btStart.setEnabled(false);
+        btStart.setText(R.string.start);
+        btStop.setEnabled(true);
+        btStop.setText(R.string.stop);
+        break;
+      case BT_STATE_PAUSED:
+        btStart.setEnabled(true);
+        btStart.setText(R.string.resume);
+        btStop.setEnabled(true);
+        btStop.setText(R.string.finish);
+        break;
     }
+
+
+//    if (requestingLocationUpdates) {
+//      btStart.setEnabled(false);
+//      btStop.setEnabled(true);
+//    } else {
+//      btStart.setEnabled(true);
+//      btStop.setEnabled(false);
+//    }
+
   }
 
   private void drawPositionMarker(Location location) {

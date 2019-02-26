@@ -1,25 +1,54 @@
 package com.erkprog.madlocationtracker.ui.trackFitActivity;
 
 import android.location.Location;
+import android.util.Log;
 
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.utils.Utils;
 
 public class TrackActivityPresenter implements TrackActivityContract.Presenter {
 
+  private static final String TAG = "TrackActivityPresenter";
+
   private TrackActivityContract.View mView;
 
   @Override
   public void onServiceConnected(boolean isGettingLocationUpdates) {
-    if (isGettingLocationUpdates) {
-      if (mView.getCurrentLocation() != null && mView.isMapReady()) {
-        mView.showCurrentPosition(mView.getCurrentLocation());
+    if (!isGettingLocationUpdates) {
+      Utils.logd(TAG, "set button to initial");
+      mView.setButtonsState(TrackFitActivity.BT_STATE_INITIAL);
+      return;
+    }
+
+    if (mView.getCurrentLocation() != null && mView.isMapReady()) {
+      mView.showCurrentPosition(mView.getCurrentLocation());
+    }
+
+    if (mView.getCurrentFitActivity() != null) {
+      mView.showDistance(Utils.getFormattedDistance(mView.getCurrentFitActivity().getDistance()));
+      mView.showDuration(mView.getCurrentFitActivity().getStartTime());
+      Utils.logd(TAG, "status " + mView.getCurrentFitActivity().getStatus());
+      if (mView.getCurrentFitActivity().getStatus() == FitActivity.STATUS_TRACKING) {
+        mView.setButtonsState(TrackFitActivity.BT_STATE_TRACKING);
       }
-      if (mView.getCurrentFitActivity() != null) {
-        mView.showDistance(Utils.getFormattedDistance(mView.getCurrentFitActivity().getDistance()));
-        mView.showDuration(mView.getCurrentFitActivity().getStartTime());
+      if (mView.getCurrentFitActivity().getStatus() == FitActivity.STATUS_PAUSED) {
+        mView.setButtonsState(TrackFitActivity.BT_STATE_PAUSED);
       }
     }
+
+//    if (isGettingLocationUpdates) {
+//      if (mView.getCurrentLocation() != null && mView.isMapReady()) {
+//        mView.showCurrentPosition(mView.getCurrentLocation());
+//      }
+//      if (mView.getCurrentFitActivity() != null) {
+//        mView.showDistance(Utils.getFormattedDistance(mView.getCurrentFitActivity().getDistance()));
+//        mView.showDuration(mView.getCurrentFitActivity().getStartTime());
+//
+//      }
+//    } else {
+//      mView.setButtonsState(TrackFitActivity.BT_STATE_INITIAL);
+//    }
+
   }
 
   @Override
@@ -50,7 +79,11 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter {
 
   @Override
   public void onLocationUpdatesStatusChanged(boolean requestingLocationUpdates) {
-    mView.setButtonsState(requestingLocationUpdates);
+    if (requestingLocationUpdates) {
+      mView.setButtonsState(TrackFitActivity.BT_STATE_TRACKING);
+      return;
+    }
+    mView.setButtonsState(TrackFitActivity.BT_STATE_INITIAL);
   }
 
   @Override

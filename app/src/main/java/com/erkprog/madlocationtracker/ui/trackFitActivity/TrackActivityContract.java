@@ -34,7 +34,7 @@ class TrackActivityContract {
 
     void stopTracking();
 
-    void setButtonsState(boolean requestingLocationUpdates);
+    void setButtonsState(int state);
 
     void showRoute(List<Location> locations);
   }
