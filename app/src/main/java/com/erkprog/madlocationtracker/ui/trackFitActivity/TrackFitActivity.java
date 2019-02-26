@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import com.erkprog.madlocationtracker.LocationUpdatesService;
 import com.erkprog.madlocationtracker.R;
+import com.erkprog.madlocationtracker.data.entity.FitChronometer;
 import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -64,6 +65,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   TextView tvDistance;
   Chronometer chronometer;
   private long pausedTime;
+  private FitChronometer mChronometer;
 
   private TrackActivityContract.Presenter mPresenter;
 
@@ -422,6 +424,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
     tvDistance = findViewById(R.id.cr_act_distance);
     chronometer = findViewById(R.id.cr_act_time);
+    mChronometer = FitChronometer.getInstance();
   }
 
   @Override
