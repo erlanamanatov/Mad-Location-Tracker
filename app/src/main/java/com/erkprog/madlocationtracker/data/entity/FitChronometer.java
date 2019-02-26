@@ -1,16 +1,19 @@
 package com.erkprog.madlocationtracker.data.entity;
 
-import android.widget.Chronometer;
-
 public class FitChronometer {
 
   private static FitChronometer instance;
+
+  private long baseTime;
+
+  private long pausedTime;
+
+  private long duration;
 
   private FitChronometer() {
 
   }
 
-  private Chronometer mChronometer;
 
   public static FitChronometer getInstance() {
     if (instance == null) {
@@ -19,11 +22,27 @@ public class FitChronometer {
     return instance;
   }
 
-  public long getBase() {
-    return mChronometer.getBase();
+  public long getBaseTime() {
+    return baseTime;
   }
 
-  public void setBase(long base) {
-    mChronometer.setBase(base);
+  public void setBaseTime(long baseTime) {
+    this.baseTime = baseTime;
+  }
+
+  public long getPausedTime() {
+    return pausedTime;
+  }
+
+  public void setPausedTime(long pausedTime) {
+    this.pausedTime = pausedTime;
+  }
+
+  public long getDuration() {
+    return duration;
+  }
+
+  public void setDuration(long duration) {
+    this.duration = duration;
   }
 }

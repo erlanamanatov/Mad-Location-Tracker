@@ -144,8 +144,16 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   public void showDuration(Date startDate) {
-    chronometer.setBase(Utils.getBaseForChronometer(startDate));
-    chronometer.start();
+/*    chronometer.setBase(Utils.getBaseForChronometer(startDate));
+    chronometer.start();*/
+    if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_PAUSED) {
+      chronometer.setBase(SystemClock.elapsedRealtime() - mChronometer.getDuration());
+      pausedTime = SystemClock.elapsedRealtime();
+    }
+    if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_TRACKING) {
+      chronometer.setBase(mChronometer.getBaseTime());
+      chronometer.start();
+    }
   }
 
   @Override
@@ -429,6 +437,14 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   protected void onDestroy() {
+    if (Utils.requestingLocationUpdates(this)) {
+      if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_TRACKING) {
+        mChronometer.setBaseTime(chronometer.getBase());
+      }
+      if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_PAUSED) {
+        mChronometer.setDuration(pausedTime - chronometer.getBase());
+      }
+    }
     mPresenter.unBind();
     super.onDestroy();
   }
