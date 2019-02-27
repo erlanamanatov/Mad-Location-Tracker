@@ -38,6 +38,8 @@ class TrackActivityContract {
     void setButtonsState(int state);
 
     void showRoute(List<Location> locations);
+
+    void showMessage(String message);
   }
 
   interface Presenter extends ILifeCycle<View> {

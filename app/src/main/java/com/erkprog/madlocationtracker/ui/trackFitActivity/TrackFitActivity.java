@@ -17,6 +17,7 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
@@ -71,6 +72,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   private LocationUpdatesService mService = null;
   private static final int REQUEST_GPS = 1;
   private FitActivityReceiver mFitActivityReceiver;
+  private ActivityResultReceiver mResultReceiver;
   private GoogleMap mMap;
 
   private Polyline runningPathPolyline;
@@ -154,6 +156,11 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   }
 
   @Override
+  public void showMessage(String message) {
+    Snackbar.make(btStop, message, Snackbar.LENGTH_LONG).show();
+  }
+
+  @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_track_fit_activity);
@@ -162,6 +169,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     mapFragment.getMapAsync(this);
     initViews();
     mFitActivityReceiver = new FitActivityReceiver();
+    mResultReceiver = new ActivityResultReceiver();
     mPresenter = new TrackActivityPresenter();
     mPresenter.bind(this);
   }
@@ -180,11 +188,14 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     super.onResume();
     LocalBroadcastManager.getInstance(this)
         .registerReceiver(mFitActivityReceiver, new IntentFilter(LocationUpdatesService.ACTION_TRACKING_BROADCAST));
+    LocalBroadcastManager.getInstance(this)
+        .registerReceiver(mResultReceiver, new IntentFilter(LocationUpdatesService.ACTION_RESULT_BROADCAST));
   }
 
   @Override
   protected void onPause() {
     LocalBroadcastManager.getInstance(this).unregisterReceiver(mFitActivityReceiver);
+    LocalBroadcastManager.getInstance(this).unregisterReceiver(mResultReceiver);
     super.onPause();
   }
 
@@ -381,6 +392,14 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       FitActivity usersActivity = intent.getParcelableExtra(LocationUpdatesService.EXTRA_FIT_ACTIVITY);
       Location newLocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
       mPresenter.onTrackingBroadcastReceived(usersActivity, newLocation);
+    }
+  }
+
+  private class ActivityResultReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      String resultMessage = intent.getStringExtra(LocationUpdatesService.EXTRA_RESULT_MESSAGE);
+      showMessage(resultMessage);
     }
   }
 

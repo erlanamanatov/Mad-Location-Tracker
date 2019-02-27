@@ -41,6 +41,8 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public static final String ACTION_TRACKING_BROADCAST = PACKAGE_NAME + ".trackingBroadcast";
   public static final String EXTRA_FIT_ACTIVITY = PACKAGE_NAME + ".fitactivity";
   public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
+  public static final String ACTION_RESULT_BROADCAST = PACKAGE_NAME + ".resultBroadcast";
+  public static final String EXTRA_RESULT_MESSAGE = PACKAGE_NAME + ".resultMessage";
   private static final int GEOHASH_MIN_POINT_COUNT = 1;
   private static final int GEOHASH_HASH_LENGTH = 7;
   private static final String CHANNEL_ID = "channel 1";
@@ -156,6 +158,13 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     LocalBroadcastManager.getInstance(AppApplication.getInstance()).sendBroadcast(intent);
   }
 
+  private void sendResultBroadcast(String message) {
+    // send null fitActivity if user has not started tracking new activity
+    Intent intent = new Intent(ACTION_RESULT_BROADCAST);
+    intent.putExtra(EXTRA_RESULT_MESSAGE, message);
+    LocalBroadcastManager.getInstance(AppApplication.getInstance()).sendBroadcast(intent);
+  }
+
   public void startTracking() {
     Utils.logd(TAG, "Requesting location updates");
     startService(new Intent(getApplicationContext(), LocationUpdatesService.class));
@@ -195,8 +204,10 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
           mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter.getGeoFilteredTrack());
           Utils.logd(TAG, " geofiltered locations saved to DB");
           saveFitActivityToDB();
+          sendResultBroadcast("Activity successfully saved to DB");
         } else {
           deleteFitActivity();
+          sendResultBroadcast("No locations data. Activity wasn't saved to DB");
         }
         reset();
         mGeohashRTFilter.reset(null);
