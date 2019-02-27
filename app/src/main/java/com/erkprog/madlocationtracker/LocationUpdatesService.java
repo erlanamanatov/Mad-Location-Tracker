@@ -38,7 +38,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   private static final String TAG = LocationUpdatesService.class.getSimpleName();
 
   private static final String PACKAGE_NAME = "com.erkprog.madlocationtracker.locationupdatesservice";
-  public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
+  public static final String ACTION_TRACKING_BROADCAST = PACKAGE_NAME + ".trackingBroadcast";
   public static final String EXTRA_FIT_ACTIVITY = PACKAGE_NAME + ".fitactivity";
   public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
   private static final int GEOHASH_MIN_POINT_COUNT = 1;
@@ -145,12 +145,12 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     mLocation = location;
     Utils.logd(TAG, "onNewLocation: lat " + mLocation.getLatitude() + ", long " + mLocation.getLongitude() + ", activity id = " + mFitActivityId);
     Utils.logd(TAG, "onNewLocation: total distance = " + mCurrentFitActivity.getDistance());
-    sendBroadcast(mCurrentFitActivity, location);
+    sendTrackingBroadcast(mCurrentFitActivity, location);
   }
 
-  private void sendBroadcast(FitActivity fitActivity, Location location) {
+  private void sendTrackingBroadcast(FitActivity fitActivity, Location location) {
     // send null fitActivity if user has not started tracking new activity
-    Intent intent = new Intent(ACTION_BROADCAST);
+    Intent intent = new Intent(ACTION_TRACKING_BROADCAST);
     intent.putExtra(EXTRA_FIT_ACTIVITY, fitActivity);
     intent.putExtra(EXTRA_LOCATION, location);
     LocalBroadcastManager.getInstance(AppApplication.getInstance()).sendBroadcast(intent);
@@ -274,7 +274,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     } else {
       // display current position, the user has not started tracking activity yet
       // TODO: create new broadcast to avoid null
-      sendBroadcast(null, location);
+      sendTrackingBroadcast(null, location);
     }
   }
 

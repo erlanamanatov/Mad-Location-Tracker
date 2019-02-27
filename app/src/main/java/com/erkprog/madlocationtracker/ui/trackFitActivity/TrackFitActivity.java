@@ -48,7 +48,6 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class TrackFitActivity extends AppCompatActivity implements View.OnClickListener,
@@ -180,7 +179,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   protected void onResume() {
     super.onResume();
     LocalBroadcastManager.getInstance(this)
-        .registerReceiver(mFitActivityReceiver, new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
+        .registerReceiver(mFitActivityReceiver, new IntentFilter(LocationUpdatesService.ACTION_TRACKING_BROADCAST));
   }
 
   @Override
@@ -381,7 +380,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     public void onReceive(Context context, Intent intent) {
       FitActivity usersActivity = intent.getParcelableExtra(LocationUpdatesService.EXTRA_FIT_ACTIVITY);
       Location newLocation = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
-      mPresenter.onBroadcastReceived(usersActivity, newLocation);
+      mPresenter.onTrackingBroadcastReceived(usersActivity, newLocation);
     }
   }
 

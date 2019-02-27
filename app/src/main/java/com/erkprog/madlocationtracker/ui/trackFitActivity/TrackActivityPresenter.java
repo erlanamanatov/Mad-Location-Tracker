@@ -77,7 +77,7 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter {
   }
 
   @Override
-  public void onBroadcastReceived(FitActivity usersActivity, Location location) {
+  public void onTrackingBroadcastReceived(FitActivity usersActivity, Location location) {
     if (location != null) {
       mView.showCurrentPosition(location);
     }

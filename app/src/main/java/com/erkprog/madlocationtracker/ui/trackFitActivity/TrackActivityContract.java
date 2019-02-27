@@ -52,6 +52,6 @@ class TrackActivityContract {
 
     void onLocationUpdatesStatusChanged(boolean requestingLocationUpdates);
 
-    void onBroadcastReceived(FitActivity usersActivity, Location newLocation);
+    void onTrackingBroadcastReceived(FitActivity usersActivity, Location newLocation);
   }
 }
