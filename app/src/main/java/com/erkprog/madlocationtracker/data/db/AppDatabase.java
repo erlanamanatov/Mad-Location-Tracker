@@ -13,7 +13,7 @@ import com.erkprog.madlocationtracker.data.entity.LocationItem;
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
 
-  public abstract ActivityDao acitivityDao();
+  public abstract ActivityDao activityDao();
 
   public abstract LocationDao locationDao();
 

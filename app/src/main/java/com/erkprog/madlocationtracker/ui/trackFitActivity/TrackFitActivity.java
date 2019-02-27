@@ -227,7 +227,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   public void setButtonsState(int state) {
-    Utils.logd(TAG, "setting button state " + state);
     switch (state) {
       case BT_STATE_INITIAL:
         btStart.setEnabled(true);

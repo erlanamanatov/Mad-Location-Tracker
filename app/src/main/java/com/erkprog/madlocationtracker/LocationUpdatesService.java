@@ -183,21 +183,21 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   public void stopTracking(long trackingDuration) {
-    Utils.logd(TAG, "Removing location updates");
+    Utils.logd(TAG, "stop tracking");
     try {
       Utils.setRequestingLocationUpdates(this, false);
       ServicesHelper.getLocationService(this, KalmanLocationService::stop);
       mCurrentFitActivity.setTrackingDuration(trackingDuration);
-      Utils.logd(TAG, " Remove location updates, distanceAsIs " + mGeohashRTFilter.getDistanceAsIs());
-      Utils.logd(TAG, " Remove location updates, distanceAsIsHp " + mGeohashRTFilter.getDistanceAsIsHP());
-      Utils.logd(TAG, " Remove location updates, distanceGeoFiltered " + mGeohashRTFilter.getDistanceGeoFiltered());
-      Utils.logd(TAG, " Remove location updates, distanceGeoFilteredHp " + mGeohashRTFilter.getDistanceGeoFilteredHP());
       Utils.logd(TAG, " Remove location upgates, size of filtered locations list: " + Integer.toString(mGeohashRTFilter.getGeoFilteredTrack().size()));
       mServiceHandler.post(() -> {
         mGeohashRTFilter.stop();
-        mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter.getGeoFilteredTrack());
-        Utils.logd(TAG, " geofiltered locations saved to DB");
-        saveFitActivityToDB();
+        if (mGeohashRTFilter.getGeoFilteredTrack().size() > 0) {
+          mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter.getGeoFilteredTrack());
+          Utils.logd(TAG, " geofiltered locations saved to DB");
+          saveFitActivityToDB();
+        } else {
+          deleteFitActivity();
+        }
         reset();
         mGeohashRTFilter.reset(null);
         stopSelf();
@@ -208,6 +208,17 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     } catch (Exception exception) {
       Utils.loge(TAG, "Removing location updates: " + exception.getMessage());
     }
+  }
+
+  private void saveFitActivityToDB() {
+    mCurrentFitActivity.setEndTime(Calendar.getInstance().getTime());
+    mRepository.updateActivity(mCurrentFitActivity);
+    Utils.logd(TAG, "User's activity saved to DB: " + mCurrentFitActivity.toString());
+  }
+
+  private void deleteFitActivity() {
+    mRepository.deleteActivity(mCurrentFitActivity);
+    Utils.logd(TAG, "User's activity deleted");
   }
 
   private void reset() {
@@ -232,12 +243,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   public List<Location> getLocationsList() {
     return listLocations;
-  }
-
-  private void saveFitActivityToDB() {
-    mCurrentFitActivity.setEndTime(Calendar.getInstance().getTime());
-    mRepository.updateActivity(mCurrentFitActivity);
-    Utils.logd(TAG, "User's activity saved to DB: " + mCurrentFitActivity.toString());
   }
 
   private Notification getNotification() {

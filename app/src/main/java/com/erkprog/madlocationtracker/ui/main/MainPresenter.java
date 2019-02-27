@@ -23,7 +23,7 @@ public class MainPresenter implements MainContract.Presenter {
 
   @Override
   public void loadFitActivities() {
-    mRepository.getDatabase().acitivityDao()
+    mRepository.getDatabase().activityDao()
         .getAllActivities()
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())

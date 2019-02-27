@@ -32,11 +32,15 @@ public class LocalRepository {
   }
 
   public long addActivity(FitActivity fitActivity) {
-    return mDatabase.acitivityDao().addActivity(fitActivity);
+    return mDatabase.activityDao().addActivity(fitActivity);
+  }
+
+  public void deleteActivity(FitActivity fitActivity) {
+    mDatabase.activityDao().deleteActivity(fitActivity);
   }
 
   public void updateActivity(FitActivity fitActivity) {
-    mDatabase.acitivityDao().updateActivity(fitActivity);
+    mDatabase.activityDao().updateActivity(fitActivity);
   }
 
   public void saveGeoFilteredTrack(long fitActivityId, List<Location> geoFilteredTrack) {
