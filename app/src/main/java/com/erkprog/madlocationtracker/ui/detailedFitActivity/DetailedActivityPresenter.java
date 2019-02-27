@@ -28,13 +28,13 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
   public void processFitActivity(FitActivity fitActivity) {
     float distance = fitActivity.getDistance();
     long totalDurationMillis = fitActivity.getEndTime().getTime() - fitActivity.getStartTime().getTime();
+    long trackingTime = fitActivity.getTrackingDuration();
     mView.showDistance(Utils.getFormattedDistance(distance));
     mView.showDuration(Utils.getFormattedDuration(totalDurationMillis));
-    float avgSpeed = distance / ((float) totalDurationMillis / 1000);
+    float avgSpeed = distance / ((float) trackingTime / 1000);
     avgSpeed = avgSpeed * 3600 / 1000;
     mView.showAvgSpeed(Utils.getFormattedSpeed(avgSpeed));
-    Utils.logd(TAG, Utils.getFormattedDuration(fitActivity.getTrackingDuration()));
-    mView.showTrackingTime(Utils.getFormattedDuration(fitActivity.getTrackingDuration()));
+    mView.showTrackingTime(Utils.getFormattedDuration(trackingTime));
   }
 
   @Override

@@ -189,16 +189,6 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     super.onPause();
   }
 
-  @Override
-  protected void onStop() {
-    if (mBound) {
-      unbindService(mServiceConnection);
-      mBound = false;
-    }
-    PreferenceManager.getDefaultSharedPreferences(this)
-        .unregisterOnSharedPreferenceChangeListener(this);
-    super.onStop();
-  }
 
   @Override
   public void startTracking() {
@@ -230,7 +220,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   public void stopTracking() {
     setButtonsState(BT_STATE_INITIAL);
     chronometer.stop();
-    long trackingDuration = SystemClock.elapsedRealtime() - chronometer.getBase();
+//    long trackingDuration = SystemClock.elapsedRealtime() - chronometer.getBase();
+    long trackingDuration = pausedTime - chronometer.getBase();
     mService.stopTracking(trackingDuration);
   }
 
@@ -407,7 +398,19 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   }
 
   @Override
+  protected void onStop() {
+    if (mBound) {
+      unbindService(mServiceConnection);
+      mBound = false;
+    }
+    PreferenceManager.getDefaultSharedPreferences(this)
+        .unregisterOnSharedPreferenceChangeListener(this);
+    super.onStop();
+  }
+
+  @Override
   protected void onDestroy() {
+    Utils.logd(TAG, "onDestroy");
     if (Utils.requestingLocationUpdates(this)) {
       if (mService.getCurrentFitActivity().getStatus() == FitActivity.STATUS_TRACKING) {
         chController.setBaseTime(chronometer.getBase());
