@@ -32,6 +32,7 @@ import android.widget.Toast;
 import com.erkprog.madlocationtracker.LocationUpdatesService;
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.data.entity.ChronometerController;
+import com.erkprog.madlocationtracker.ui.btScanActivity.BtScanActivity;
 import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -61,7 +62,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   public static final int BT_STATE_TRACKING = 6;
   public static final int BT_STATE_PAUSED = 7;
 
-  Button btStart, btStop;
+  Button btStart, btStop, btScan;
   TextView tvDistance;
   Chronometer chronometer;
   private long pausedTime;
@@ -348,6 +349,11 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       case R.id.button_stop_tracking:
         mPresenter.onBtStopClicked();
         break;
+
+      case R.id.button_bt_scan:
+        Intent intent = new Intent(this, BtScanActivity.class);
+        startActivityForResult(intent, 1);
+        break;
     }
   }
 
@@ -408,6 +414,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     btStart.setOnClickListener(this);
     btStop = findViewById(R.id.button_stop_tracking);
     btStop.setOnClickListener(this);
+    btScan = findViewById(R.id.button_bt_scan);
+    btScan.setOnClickListener(this);
     userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
     tvDistance = findViewById(R.id.cr_act_distance);
     chronometer = findViewById(R.id.cr_act_time);

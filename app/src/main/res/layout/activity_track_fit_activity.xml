@@ -13,10 +13,11 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
             map:layout_constraintBottom_toTopOf="@+id/button_start_tracking"
             map:layout_constraintEnd_toEndOf="parent"
             map:layout_constraintStart_toStartOf="parent"
-            map:layout_constraintTop_toTopOf="parent"/>
+            map:layout_constraintTop_toBottomOf="@+id/button_bt_scan"/>
 
   <Button
       android:id="@+id/button_start_tracking"
@@ -83,5 +84,15 @@
       android:text="@string/time"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"/>
+
+  <Button
+      android:id="@+id/button_bt_scan"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:layout_marginTop="8dp"
+      android:text="Bluetooth"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>
