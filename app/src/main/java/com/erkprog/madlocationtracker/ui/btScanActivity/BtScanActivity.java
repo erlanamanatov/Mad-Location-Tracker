@@ -1,10 +1,14 @@
 package com.erkprog.madlocationtracker.ui.btScanActivity;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,7 +16,7 @@ import android.support.v7.widget.RecyclerView;
 
 import com.erkprog.madlocationtracker.R;
 
-public class BtScanActivity extends AppCompatActivity {
+public class BtScanActivity extends AppCompatActivity implements BtDevicesAdapter.OnDeviceClickListener {
   private static final String TAG = "BtScanActivity";
 
   private static final int REQUEST_ENABLE_BT = 1;
@@ -34,7 +38,7 @@ public class BtScanActivity extends AppCompatActivity {
 
     mRecyclerView = findViewById(R.id.bt_scan_rcv);
     mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-    mBtDevicesAdapter = new BtDevicesAdapter();
+    mBtDevicesAdapter = new BtDevicesAdapter(this);
     mRecyclerView.setAdapter(mBtDevicesAdapter);
 
     final BluetoothManager bluetoothManager =
@@ -45,9 +49,9 @@ public class BtScanActivity extends AppCompatActivity {
     if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
       Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
       startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+    } else {
+      scanLeDevice(true);
     }
-
-    scanLeDevice(true);
   }
 
   private void scanLeDevice(final boolean enable) {
@@ -73,4 +77,19 @@ public class BtScanActivity extends AppCompatActivity {
           mBtDevicesAdapter.notifyDataSetChanged();
         }
       });
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_OK) {
+      scanLeDevice(true);
+    }
+  }
+
+  @Override
+  public void onDeviceClicked(BluetoothDevice device) {
+    Intent intent = new Intent();
+    intent.putExtra("device", device);
+    setResult(RESULT_OK, intent);
+    finish();
+  }
 }

@@ -1,6 +1,7 @@
 package com.erkprog.madlocationtracker.ui.trackFitActivity;
 
 import android.Manifest;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -57,6 +59,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     OnMapReadyCallback,
     TrackActivityContract.View {
   private static final String TAG = "TrackFitActivity";
+  private static final int REQUEST_BT_DEVICES = 99;
 
   public static final int BT_STATE_INITIAL = 5;
   public static final int BT_STATE_TRACKING = 6;
@@ -352,7 +355,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
       case R.id.button_bt_scan:
         Intent intent = new Intent(this, BtScanActivity.class);
-        startActivityForResult(intent, 1);
+        startActivityForResult(intent, REQUEST_BT_DEVICES);
         break;
     }
   }
@@ -388,6 +391,16 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
         mPresenter.onBtStartClicked();
       } else {
         Toast.makeText(this, "Access to device's location is required", Toast.LENGTH_LONG).show();
+      }
+    }
+  }
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    if (requestCode == REQUEST_BT_DEVICES && resultCode == RESULT_OK && data != null) {
+      BluetoothDevice device = data.getParcelableExtra("device");
+      if (device != null) {
+        Toast.makeText(TrackFitActivity.this, device.getName(), Toast.LENGTH_SHORT).show();
       }
     }
   }
