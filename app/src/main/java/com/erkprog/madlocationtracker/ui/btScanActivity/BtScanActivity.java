@@ -50,7 +50,6 @@ public class BtScanActivity extends AppCompatActivity {
     scanLeDevice(true);
   }
 
-
   private void scanLeDevice(final boolean enable) {
     if (enable) {
       // Stops scanning after a pre-defined scan period.
@@ -69,7 +68,9 @@ public class BtScanActivity extends AppCompatActivity {
 
   private BluetoothAdapter.LeScanCallback mLeScanCallback =
       (device, rssi, scanRecord) -> runOnUiThread(() -> {
-        mBtDevicesAdapter.addDevice(device);
-        mBtDevicesAdapter.notifyDataSetChanged();
+        if (device.getName() != null && device.getName().toLowerCase().contains("mi band 2")) {
+          mBtDevicesAdapter.addDevice(device);
+          mBtDevicesAdapter.notifyDataSetChanged();
+        }
       });
 }
