@@ -31,7 +31,11 @@ public class MainPresenter implements MainContract.Presenter {
           @Override
           public void onSuccess(List<FitActivity> fitActivities) {
             if (isAttached()) {
-              mView.displayActivities(fitActivities);
+              if (fitActivities.size() == 0) {
+                mView.showEmptyListMessage();
+              } else {
+                mView.displayActivities(fitActivities);
+              }
             }
           }
 

@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
   private FitActivityAdapter mAdapter;
   private MainContract.Presenter mPresenter;
   private FloatingActionButton trackFitActivity;
+  private View emptyListMessage;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     mPresenter.bind(this);
     mRecyclerView = findViewById(R.id.rcv_activities);
     mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+    emptyListMessage = findViewById(R.id.empty_list_message);
+    emptyListMessage.setVisibility(View.GONE);
   }
 
   @Override
@@ -70,8 +74,19 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
 
   @Override
   public void displayActivities(List<FitActivity> fitActivities) {
-    mAdapter = new FitActivityAdapter(fitActivities, MainActivity.this::onFitActivityClicked);
-    mRecyclerView.setAdapter(mAdapter);
+    emptyListMessage.setVisibility(View.GONE);
+    if (mAdapter == null) {
+      mAdapter = new FitActivityAdapter(fitActivities, MainActivity.this::onFitActivityClicked);
+      mRecyclerView.setAdapter(mAdapter);
+    } else {
+      mAdapter.setData(fitActivities);
+      mAdapter.notifyDataSetChanged();
+    }
+  }
+
+  @Override
+  public void showEmptyListMessage() {
+    emptyListMessage.setVisibility(View.VISIBLE);
   }
 
   @Override

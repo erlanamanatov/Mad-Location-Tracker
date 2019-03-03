@@ -16,6 +16,8 @@ class MainContract {
     void showMessage(int resId);
 
     void startTrackingActivity();
+
+    void showEmptyListMessage();
   }
 
   interface Presenter extends ILifeCycle<View> {

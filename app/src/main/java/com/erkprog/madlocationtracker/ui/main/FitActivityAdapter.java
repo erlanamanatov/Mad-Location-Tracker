@@ -19,6 +19,11 @@ public class FitActivityAdapter extends RecyclerView.Adapter<FitActivityAdapter.
 
   OnFitActivityClickListener mListener;
 
+  public void setData(List<FitActivity> fitActivities) {
+    mData.clear();
+    mData = fitActivities;
+  }
+
   interface OnFitActivityClickListener {
     void onFitActivityClick(FitActivity fitActivity);
   }
