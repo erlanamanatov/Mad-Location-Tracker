@@ -1,14 +1,14 @@
 package com.erkprog.madlocationtracker.ui.btScanActivity;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 
 import com.erkprog.madlocationtracker.R;
 
@@ -21,6 +21,9 @@ public class BtScanActivity extends AppCompatActivity {
   private boolean mScanning;
   private Handler mHandler;
 
+  private RecyclerView mRecyclerView;
+  private BtDevicesAdapter mBtDevicesAdapter;
+
   // Stops scanning after 10 seconds.
   private static final long SCAN_PERIOD = 10000;
 
@@ -28,6 +31,11 @@ public class BtScanActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_bt_scan);
+
+    mRecyclerView = findViewById(R.id.bt_scan_rcv);
+    mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+    mBtDevicesAdapter = new BtDevicesAdapter();
+    mRecyclerView.setAdapter(mBtDevicesAdapter);
 
     final BluetoothManager bluetoothManager =
         (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
@@ -61,8 +69,7 @@ public class BtScanActivity extends AppCompatActivity {
 
   private BluetoothAdapter.LeScanCallback mLeScanCallback =
       (device, rssi, scanRecord) -> runOnUiThread(() -> {
-        Log.d(TAG, "callback: " + device.getName());
-//              leDeviceListAdapter.addDevice(device);
-//              leDeviceListAdapter.notifyDataSetChanged();
+        mBtDevicesAdapter.addDevice(device);
+        mBtDevicesAdapter.notifyDataSetChanged();
       });
 }
