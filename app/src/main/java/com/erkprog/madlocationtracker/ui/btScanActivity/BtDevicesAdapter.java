@@ -19,7 +19,7 @@ public class BtDevicesAdapter extends RecyclerView.Adapter<BtDevicesAdapter.BtDe
   private OnDeviceClickListener mListener;
 
   interface OnDeviceClickListener {
-    void onDeviceClicked(BluetoothDevice device);
+    void onDeviceClicked(String deviceAddress);
   }
 
   BtDevicesAdapter(OnDeviceClickListener listener) {
@@ -43,12 +43,7 @@ public class BtDevicesAdapter extends RecyclerView.Adapter<BtDevicesAdapter.BtDe
 
     viewHolder.tvName.setText(btDevice.getName());
     viewHolder.tvAddress.setText(btDevice.getAddress());
-    viewHolder.view.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        mListener.onDeviceClicked(btDevice);
-      }
-    });
+    viewHolder.view.setOnClickListener(v -> mListener.onDeviceClicked(btDevice.getAddress()));
   }
 
   void addDevice(BluetoothDevice device) {
@@ -67,7 +62,7 @@ public class BtDevicesAdapter extends RecyclerView.Adapter<BtDevicesAdapter.BtDe
     private TextView tvAddress;
     private View view;
 
-    public BtDeviceViewHolder(@NonNull View itemView) {
+    BtDeviceViewHolder(@NonNull View itemView) {
       super(itemView);
       view = itemView;
       tvName = itemView.findViewById(R.id.bt_device_name);

@@ -1,13 +1,10 @@
 package com.erkprog.madlocationtracker.ui.btScanActivity;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,6 +15,8 @@ import com.erkprog.madlocationtracker.R;
 
 public class BtScanActivity extends AppCompatActivity implements BtDevicesAdapter.OnDeviceClickListener {
   private static final String TAG = "BtScanActivity";
+
+  public static String EXTRA_DEVICE_ADDRESS = "device_address";
 
   private static final int REQUEST_ENABLE_BT = 1;
 
@@ -86,9 +85,9 @@ public class BtScanActivity extends AppCompatActivity implements BtDevicesAdapte
   }
 
   @Override
-  public void onDeviceClicked(BluetoothDevice device) {
+  public void onDeviceClicked(String deviceAddress) {
     Intent intent = new Intent();
-    intent.putExtra("device", device);
+    intent.putExtra(EXTRA_DEVICE_ADDRESS, deviceAddress);
     setResult(RESULT_OK, intent);
     finish();
   }

@@ -398,9 +398,9 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   @Override
   protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
     if (requestCode == REQUEST_BT_DEVICES && resultCode == RESULT_OK && data != null) {
-      BluetoothDevice device = data.getParcelableExtra("device");
-      if (device != null) {
-        Toast.makeText(TrackFitActivity.this, device.getName(), Toast.LENGTH_SHORT).show();
+      String deviceAddress = data.getStringExtra(BtScanActivity.EXTRA_DEVICE_ADDRESS);
+      if (deviceAddress != null) {
+        Toast.makeText(TrackFitActivity.this, deviceAddress, Toast.LENGTH_SHORT).show();
       }
     }
   }
