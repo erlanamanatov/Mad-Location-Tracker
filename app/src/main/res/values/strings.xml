@@ -19,4 +19,5 @@
   <string name="error_loading_detailed_data">Error loading detailed data</string>
   <string name="resume">Resume</string>
   <string name="finish">Finish</string>
+  <string name="empty_db_message">You don\'t have \ntracked activities</string>
 </resources>
