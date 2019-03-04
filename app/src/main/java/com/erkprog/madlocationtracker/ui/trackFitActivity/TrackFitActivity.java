@@ -86,6 +86,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   private static final float ROUTE_WIDTH = 25;
   private static final String ROUTE_COLOR = "#801B60FE";
 
+  private String mDeviceAddress;
+
   private boolean mBound = false;
 
   private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -96,6 +98,10 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       mService = binder.getService();
       mBound = true;
       mPresenter.onServiceConnected(Utils.requestingLocationUpdates(TrackFitActivity.this));
+      if (mDeviceAddress != null) {
+        mService.setBtAddress(mDeviceAddress);
+        mDeviceAddress = null;
+      }
     }
 
     @Override
@@ -401,6 +407,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       String deviceAddress = data.getStringExtra(BtScanActivity.EXTRA_DEVICE_ADDRESS);
       if (deviceAddress != null) {
         Toast.makeText(TrackFitActivity.this, deviceAddress, Toast.LENGTH_SHORT).show();
+//        mService.setBtAddress(deviceAddress);
+        mDeviceAddress = deviceAddress;
       }
     }
   }

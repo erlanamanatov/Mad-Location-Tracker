@@ -54,6 +54,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   private HandlerThread handlerThread;
   private Handler mServiceHandler;
+  private BluetoothDeviceManager mBluetoothManager;
   private GeohashRTFilter mGeohashRTFilter;
   private FitActivity mCurrentFitActivity;
   private long mFitActivityId = -1;
@@ -292,8 +293,16 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   @Override
   public void onDestroy() {
     Utils.logd(TAG, "Service on destroy");
+    Utils.logd(TAG, "bluetoothManager " + (mBluetoothManager == null ? "Null" : "NotNull"));
     handlerThread.quitSafely();
     ServicesHelper.removeLocationServiceInterface(this);
+    if (mBluetoothManager != null) {
+      Utils.logd(TAG, "btManager not null");
+      mBluetoothManager.stop();
+    } else {
+      Utils.logd(TAG, "btManager is null");
+    }
+    super.onDestroy();
   }
 
   public void continueTracking() {
@@ -309,6 +318,12 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     if (mCurrentFitActivity != null) {
       mCurrentFitActivity.setStatus(FitActivity.STATUS_PAUSED);
     }
+  }
+
+  public void setBtAddress(String deviceAddress) {
+    mBluetoothManager = new BluetoothDeviceManager(this, deviceAddress);
+    mBluetoothManager.start();
+    Utils.logd(TAG, "bluetoothManager " + (mBluetoothManager == null ? "Null" : "NotNull"));
   }
 
   public class LocalBinder extends Binder {
