@@ -30,34 +30,33 @@ public class HeartRateModel {
     this.date = Calendar.getInstance().getTime();
   }
 
-  public int getValue() {
-    return value;
+  public long getId() {
+    return id;
   }
 
-  public void setValue(int value) {
-    this.value = value;
-  }
-
-  public Date getDate() {
-    return date;
+  public void setId(long id) {
+    this.id = id;
   }
 
   public void setDate(Date date) {
     this.date = date;
   }
 
-  public long getFitActivityId() {
-    return fitActivityId;
+  public int getValue() {
+    return value;
   }
 
-  public void setFitActivityId(long fitActivityId) {
-    this.fitActivityId = fitActivityId;
+  public Date getDate() {
+    return date;
+  }
+
+  public long getFitActivityId() {
+    return fitActivityId;
   }
 
   @Override
   public String toString() {
     return "HeartRateModel{" +
-        "id=" + id +
         ", value=" + value +
         ", date=" + date +
         ", fitActivityId=" + fitActivityId +
