@@ -177,6 +177,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
     });
     requestLocationUpdates(KalmanFilterSettings.getForegroundSettings());
+    if (mBluetoothManager != null) {
+      mBluetoothManager.startScanHeartRate();
+    }
   }
 
   private void requestLocationUpdates(KalmanLocationService.Settings settings) {

@@ -13,11 +13,12 @@ import android.content.Context;
 import com.erkprog.madlocationtracker.data.entity.MiBandServiceConst;
 import com.erkprog.madlocationtracker.utils.Utils;
 
+import java.util.Arrays;
+
 class BluetoothDeviceManager {
   private static final String TAG = "BluetoothDeviceManager";
 
   private Context mContext;
-  //  private String mDeviceAddress;
   private BluetoothDevice mBluetoothDevice;
   private BluetoothGatt mBluetoothGatt;
 
@@ -52,32 +53,66 @@ class BluetoothDeviceManager {
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
       super.onServicesDiscovered(gatt, status);
       Utils.logd(TAG, "onServicesDiscovered");
+//      getStepsCount();
+      setHeartRateNotification();
     }
 
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
       super.onCharacteristicRead(gatt, characteristic, status);
-      Utils.logd(TAG, "onCharacteristicRead");
+      Utils.logd(TAG, "onCharacteristicRead, UUID: " + String.valueOf(characteristic.getUuid()));
+      if (characteristic.getUuid().equals(MiBandServiceConst.Basic.stepsCharacteristic)) {
+        handleSteps(characteristic.getValue());
+      }
     }
 
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
       super.onCharacteristicChanged(gatt, characteristic);
-      Utils.logd(TAG, "onCharacteristicChanged");
+      Utils.logd(TAG, "onCharacteristicChanged, UUID " + characteristic.getUuid());
+      if (characteristic.getUuid().equals(MiBandServiceConst.HeartRate.measurementCharacteristic)) {
+        handleHeartrate(characteristic.getValue());
+      }
     }
   };
 
-  void stateConnected() {
+  private void handleHeartrate(byte[] value) {
+    Utils.logd(TAG, "handleHeartrate: starts");
+    if (value.length == 2 && value[0] == 0) {
+      int hrValue = (value[1] & 0xff);
+      Utils.logd(TAG, "hr value: " + hrValue);
+    }
+  }
+
+  private void handleSteps(byte[] value) {
+    Utils.logd(TAG, "handle steps, data : " + Arrays.toString(value));
+  }
+
+  private void stateConnected() {
     mBluetoothGatt.discoverServices();
-//    txtState.setText("Connected");
   }
 
-  void stateDisconnected() {
+  private void getStepsCount() {
+    Utils.logd(TAG, "getting steps count");
+    BluetoothGattCharacteristic btChar = mBluetoothGatt.getService(MiBandServiceConst.Basic.service)
+        .getCharacteristic(MiBandServiceConst.Basic.stepsCharacteristic);
+    if (!mBluetoothGatt.readCharacteristic(btChar)) {
+      Utils.logd(TAG, "failed to get steps info");
+    }
+  }
+
+  private void stateDisconnected() {
     mBluetoothGatt.disconnect();
-//    txtState.setText("Disconnected");
   }
 
-  void setHeartRateNotification() {
+  void startScanHeartRate() {
+    BluetoothGattCharacteristic btChar = mBluetoothGatt.getService(MiBandServiceConst.HeartRate.service)
+        .getCharacteristic(MiBandServiceConst.HeartRate.controlCharacteristic);
+    btChar.setValue(new byte[]{21, 2, 1});
+    mBluetoothGatt.writeCharacteristic(btChar);
+  }
+
+  private void setHeartRateNotification() {
     Utils.logd(TAG, "listenHeartRate: starts");
     BluetoothGattCharacteristic btChar = mBluetoothGatt.getService(MiBandServiceConst.HeartRate.service)
         .getCharacteristic(MiBandServiceConst.HeartRate.measurementCharacteristic);
