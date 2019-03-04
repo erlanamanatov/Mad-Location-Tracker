@@ -23,8 +23,13 @@ class BluetoothDeviceManager {
   private BluetoothDevice mBluetoothDevice;
   private BluetoothGatt mBluetoothGatt;
   private Handler mHrHandler;
+  private BluetoothResultListener mListener;
 
   private static final int HEART_RATE_UPDATE_INTERVAL = 30 * 1000;
+
+  interface BluetoothResultListener {
+    void onHeartRateRead(int heartRateValue);
+  }
 
   BluetoothDeviceManager(Context context, String deviceAddress) {
     Utils.logd(TAG, "constructor");
@@ -36,16 +41,27 @@ class BluetoothDeviceManager {
     mHrHandler = new Handler();
   }
 
+  void setListener(BluetoothResultListener listener) {
+    mListener = listener;
+  }
+
   void start() {
     Utils.logd(TAG, "start");
-    mBluetoothGatt = mBluetoothDevice.connectGatt(mContext, false, mBluetoothGattCallback);
+    mBluetoothGatt = mBluetoothDevice.connectGatt(mContext, true, mBluetoothGattCallback);
   }
 
   private void handleHeartrate(byte[] value) {
     Utils.logd(TAG, "handleHeartrate: starts");
-    if (value.length == 2 && value[0] == 0) {
-      int hrValue = (value[1] & 0xff);
-      Utils.logd(TAG, "hr value: " + hrValue);
+    try {
+      if (value.length == 2 && value[0] == 0) {
+        int hrValue = (value[1] & 0xff);
+        Utils.logd(TAG, "hr value: " + hrValue);
+        if (hrValue != 0) {
+          mListener.onHeartRateRead(hrValue);
+        }
+      }
+    } catch (Exception exception) {
+      Utils.loge(TAG, "handling heartRate error, value: " + Arrays.toString(value) + ", error:" + exception.getMessage());
     }
   }
 
@@ -113,7 +129,6 @@ class BluetoothDeviceManager {
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
       super.onServicesDiscovered(gatt, status);
       Utils.logd(TAG, "onServicesDiscovered");
-//      getStepsCount();
       setHeartRateNotification();
     }
 

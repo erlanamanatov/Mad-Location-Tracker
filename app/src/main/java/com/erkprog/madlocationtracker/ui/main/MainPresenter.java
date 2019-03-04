@@ -3,6 +3,7 @@ package com.erkprog.madlocationtracker.ui.main;
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
+import com.erkprog.madlocationtracker.utils.Utils;
 
 import java.util.List;
 
@@ -43,6 +44,7 @@ public class MainPresenter implements MainContract.Presenter {
           public void onError(Throwable e) {
             if (isAttached()) {
               mView.showMessage(R.string.error_loading_data);
+              Utils.loge(TAG, e.getMessage());
             }
           }
 
