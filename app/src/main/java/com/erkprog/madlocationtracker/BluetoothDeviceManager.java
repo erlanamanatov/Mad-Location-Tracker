@@ -1,29 +1,36 @@
 package com.erkprog.madlocationtracker;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Handler;
 
 import com.erkprog.madlocationtracker.data.entity.MiBandServiceConst;
 import com.erkprog.madlocationtracker.utils.Utils;
+import com.jakewharton.rx.ReplayingShare;
+import com.polidea.rxandroidble2.RxBleClient;
+import com.polidea.rxandroidble2.RxBleConnection;
+import com.polidea.rxandroidble2.RxBleDevice;
 
 import java.util.Arrays;
+
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.PublishSubject;
 
 class BluetoothDeviceManager {
   private static final String TAG = "BluetoothDeviceManager";
 
-  private Context mContext;
-  private BluetoothDevice mBluetoothDevice;
-  private BluetoothGatt mBluetoothGatt;
+  private RxBleDevice mBleDevice;
+//  private BluetoothGatt mBluetoothGatt;
   private Handler mHrHandler;
   private BluetoothResultListener mListener;
+
+  private RxBleClient mBleClient;
+  private Observable<RxBleConnection> connectionObservable;
+  private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+  private PublishSubject<Boolean> disconnectTriggerSubject = PublishSubject.create();
+
 
   private static final int HEART_RATE_UPDATE_INTERVAL = 30 * 1000;
 
@@ -33,12 +40,17 @@ class BluetoothDeviceManager {
 
   BluetoothDeviceManager(Context context, String deviceAddress) {
     Utils.logd(TAG, "constructor");
-    mContext = context;
-    BluetoothManager bluetoothManager =
-        (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
-    BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-    mBluetoothDevice = bluetoothAdapter.getRemoteDevice(deviceAddress);
+    mBleClient = RxBleClient.create(context);
+    mBleDevice = mBleClient.getBleDevice(deviceAddress);
     mHrHandler = new Handler();
+    connectionObservable = prepareConnectionObservable();
+  }
+
+  private Observable<RxBleConnection> prepareConnectionObservable() {
+    return mBleDevice
+        .establishConnection(false)
+        .takeUntil(disconnectTriggerSubject)
+        .compose(ReplayingShare.instance());
   }
 
   void setListener(BluetoothResultListener listener) {
@@ -47,7 +59,49 @@ class BluetoothDeviceManager {
 
   void start() {
     Utils.logd(TAG, "start");
-    mBluetoothGatt = mBluetoothDevice.connectGatt(mContext, true, mBluetoothGattCallback);
+
+    final Disposable connectionDisposable = connectionObservable
+        .flatMapSingle(RxBleConnection::discoverServices)
+//        .flatMapSingle(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(MiBandServiceConst.Basic.stepsCharacteristic))
+        .flatMapSingle(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(MiBandServiceConst.HeartRate.measurementCharacteristic))
+        .observeOn(AndroidSchedulers.mainThread())
+//        .doOnSubscribe(disposable -> connectButton.setText(R.string.connecting))
+        .subscribe(
+            characteristic -> {
+              Utils.logd(TAG, "Start, heartRate connection has been established!");
+              setHeartRateNotification();
+            },
+            this::onConnectionFailure,
+            this::onConnectionFinished
+        );
+
+    compositeDisposable.add(connectionDisposable);
+
+//    final Disposable rConDisp = connectionObservable
+//        .flatMapSingle(RxBleConnection::discoverServices)
+//        .flatMapSingle(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(MiBandServiceConst.Basic.stepsCharacteristic))
+//        .observeOn(AndroidSchedulers.mainThread())
+//        .subscribe(
+//            characteristic -> {
+//              Utils.logd(TAG, "Start, steps connection has been established!");
+//            },
+//            this::onConnectionFailure,
+//            this::onConnectionFinished
+//        );
+//    compositeDisposable.add(rConDisp);
+
+  }
+
+  private void onConnectionFailure(Throwable throwable) {
+    Utils.logd(TAG, "onConnectionFailure, " + throwable);
+  }
+
+  private void onConnectionFinished() {
+    Utils.logd(TAG, "OnConnectionFinished");
+  }
+
+  private boolean isConnected() {
+    return mBleDevice.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED;
   }
 
   private void handleHeartrate(byte[] value) {
@@ -69,96 +123,110 @@ class BluetoothDeviceManager {
     Utils.logd(TAG, "handle steps, data : " + Arrays.toString(value));
   }
 
-  private void stateConnected() {
-    mBluetoothGatt.discoverServices();
-  }
+//  private void stateConnected() {
+//    mBluetoothGatt.discoverServices();
+//  }
 
   private void getStepsCount() {
     Utils.logd(TAG, "getting steps count");
-    BluetoothGattCharacteristic btChar = mBluetoothGatt.getService(MiBandServiceConst.Basic.service)
-        .getCharacteristic(MiBandServiceConst.Basic.stepsCharacteristic);
-    if (!mBluetoothGatt.readCharacteristic(btChar)) {
-      Utils.logd(TAG, "failed to get steps info");
+    if (isConnected()) {
+      final Disposable disposable = connectionObservable
+          .firstOrError()
+          .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(MiBandServiceConst.Basic.stepsCharacteristic))
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribe(bytes -> {
+            Utils.logd(TAG, "steps : " + Arrays.toString(bytes));
+          }, this::onReadFailure);
+
+      compositeDisposable.add(disposable);
     }
   }
 
-  private void stateDisconnected() {
-    mBluetoothGatt.disconnect();
+  private void onReadFailure(Throwable throwable) {
+    Utils.loge(TAG, "Read error: " + throwable);
   }
 
+
+//  private void stateDisconnected() {
+//    mBluetoothGatt.disconnect();
+//  }
+
   void startScanHeartRate() {
+
     mHeartTask.run();
+
+//    getStepsCount();
+//    getHeartRate();
   }
 
   void stopScanHeartRate() {
+    Utils.logd(TAG, "stopScanHeartRate");
     mHrHandler.removeCallbacks(mHeartTask);
+    compositeDisposable.clear();
   }
 
   private void getHeartRate() {
     Utils.logd(TAG, "requesting heart rate");
-    BluetoothGattCharacteristic btChar = mBluetoothGatt.getService(MiBandServiceConst.HeartRate.service)
-        .getCharacteristic(MiBandServiceConst.HeartRate.controlCharacteristic);
-    btChar.setValue(new byte[]{21, 2, 1});
-    mBluetoothGatt.writeCharacteristic(btChar);
+
+    if (isConnected()) {
+      final Disposable disposable = connectionObservable
+          .firstOrError()
+          .flatMap(rxBleConnection -> rxBleConnection.writeCharacteristic(MiBandServiceConst.HeartRate.controlCharacteristic, new byte[]{21, 2, 1}))
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribe(
+              bytes -> onWriteSuccess(),
+              this::onWriteFailure
+          );
+
+      compositeDisposable.add(disposable);
+    } else {
+      Utils.loge(TAG, "device not connected");
+      compositeDisposable.clear();
+      start();
+    }
   }
+
+  private void onWriteSuccess() {
+    Utils.logd(TAG, "onWriteSuccess");
+  }
+
+  private void onWriteFailure(Throwable throwable) {
+    Utils.logd(TAG, "onWriteFailure, " + throwable);
+  }
+
 
   private void setHeartRateNotification() {
-    Utils.logd(TAG, "listenHeartRate: starts");
-    BluetoothGattCharacteristic btChar = mBluetoothGatt.getService(MiBandServiceConst.HeartRate.service)
-        .getCharacteristic(MiBandServiceConst.HeartRate.measurementCharacteristic);
-    mBluetoothGatt.setCharacteristicNotification(btChar, true);
-    BluetoothGattDescriptor descriptor = btChar.getDescriptor(MiBandServiceConst.HeartRate.descriptor);
-    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-    mBluetoothGatt.writeDescriptor(descriptor);
+
+    Utils.logd(TAG, "setHeartRateNotification");
+    if (isConnected()) {
+      final Disposable disposable = connectionObservable
+          .flatMap(rxBleConnection -> rxBleConnection.setupNotification(MiBandServiceConst.HeartRate.measurementCharacteristic))
+          .doOnNext(notificationObservable -> Utils.logd(TAG, "notification has been set up"))
+          .flatMap(notificationObservable -> notificationObservable)
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure);
+
+      compositeDisposable.add(disposable);
+    }
   }
 
-  private BluetoothGattCallback mBluetoothGattCallback = new BluetoothGattCallback() {
-    @Override
-    public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-      super.onConnectionStateChange(gatt, status, newState);
-      if (newState == BluetoothProfile.STATE_CONNECTED) {
-        Utils.logd(TAG, "onConnectionStateChanged: connected");
-        stateConnected();
-      } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-        Utils.logd(TAG, "onConnectionStateChanged: disconnected");
-        stateDisconnected();
-      }
+  private void onNotificationReceived(byte[] bytes) {
+    try {
+      Utils.logd(TAG, "onNotificationReceived " + Arrays.toString(bytes));
+      handleHeartrate(bytes);
+    } catch (Exception e) {
+      Utils.loge(TAG, "onNotificationReceived, : " + e.getMessage());
     }
+  }
 
-    @Override
-    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-      super.onServicesDiscovered(gatt, status);
-      Utils.logd(TAG, "onServicesDiscovered");
-      setHeartRateNotification();
-    }
-
-    @Override
-    public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-      super.onCharacteristicRead(gatt, characteristic, status);
-      Utils.logd(TAG, "onCharacteristicRead, UUID: " + String.valueOf(characteristic.getUuid()));
-      if (characteristic.getUuid().equals(MiBandServiceConst.Basic.stepsCharacteristic)) {
-        handleSteps(characteristic.getValue());
-      }
-    }
-
-    @Override
-    public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-      super.onCharacteristicChanged(gatt, characteristic);
-      Utils.logd(TAG, "onCharacteristicChanged, UUID " + characteristic.getUuid());
-      if (characteristic.getUuid().equals(MiBandServiceConst.HeartRate.measurementCharacteristic)) {
-        handleHeartrate(characteristic.getValue());
-      }
-    }
-  };
+  private void onNotificationSetupFailure(Throwable throwable) {
+    Utils.loge(TAG, "onNotificationSetupFailure: " + throwable);
+  }
 
   void stop() {
     Utils.logd(TAG, "Stop");
     stopScanHeartRate();
-    if (mBluetoothGatt == null) {
-      return;
-    }
-    mBluetoothGatt.close();
-    mBluetoothGatt = null;
+    compositeDisposable.clear();
   }
 
   private Runnable mHeartTask = new Runnable() {
