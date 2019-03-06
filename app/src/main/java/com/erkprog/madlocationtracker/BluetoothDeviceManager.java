@@ -106,7 +106,7 @@ class BluetoothDeviceManager {
 
 
   void startScanHeartRate() {
-    start();
+//    start();
     mHeartTask.run();
 //    getStepsCount();
 //    getHeartRate();

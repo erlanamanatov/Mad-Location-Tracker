@@ -10,10 +10,16 @@ import android.widget.TextView;
 
 import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
+import com.erkprog.madlocationtracker.utils.HourAxisValueFormatter;
 import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -74,6 +80,18 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mMap.getUiSettings().setTiltGesturesEnabled(false);
     mMap.setOnMarkerClickListener(marker -> true);
     mPresenter.getLocations();
+  }
+
+  @Override
+  public void plotGraph(List<Entry> entries, long referenceTimestamp) {
+    IAxisValueFormatter xAxisFormatter = new HourAxisValueFormatter(referenceTimestamp);
+    XAxis xAxis = mLineChart.getXAxis();
+    xAxis.setValueFormatter(xAxisFormatter);
+    LineDataSet dataSet = new LineDataSet(entries, "Heart rate");
+    dataSet.setColor(R.color.colorAccent);
+    LineData lineData = new LineData(dataSet);
+    mLineChart.setData(lineData);
+    mLineChart.invalidate();
   }
 
   @Override
