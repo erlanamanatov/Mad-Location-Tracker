@@ -17,6 +17,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
+import com.erkprog.madlocationtracker.data.entity.HeartRateModel;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 import com.erkprog.madlocationtracker.ui.trackFitActivity.TrackFitActivity;
 import com.erkprog.madlocationtracker.utils.KalmanFilterSettings;
@@ -33,7 +34,7 @@ import mad.location.manager.lib.Services.KalmanLocationService;
 import mad.location.manager.lib.Services.ServicesHelper;
 
 
-public class LocationUpdatesService extends Service implements LocationServiceInterface {
+public class LocationUpdatesService extends Service implements LocationServiceInterface, BluetoothDeviceManager.BluetoothResultListener {
 
   private static final String TAG = LocationUpdatesService.class.getSimpleName();
 
@@ -54,6 +55,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   private HandlerThread handlerThread;
   private Handler mServiceHandler;
+  private BluetoothDeviceManager mBluetoothManager;
   private GeohashRTFilter mGeohashRTFilter;
   private FitActivity mCurrentFitActivity;
   private long mFitActivityId = -1;
@@ -174,6 +176,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       mFitActivityId = mRepository.addActivity(new FitActivity());
       mCurrentFitActivity = new FitActivity(mFitActivityId);
       Utils.logd(TAG, "New FitActivity started, id = " + mFitActivityId);
+      if (mBluetoothManager != null) {
+        mBluetoothManager.startScanHeartRate();
+      }
     });
     requestLocationUpdates(KalmanFilterSettings.getForegroundSettings());
   }
@@ -200,6 +205,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
       Utils.logd(TAG, " Remove location upgates, size of filtered locations list: " + Integer.toString(mGeohashRTFilter.getGeoFilteredTrack().size()));
       mServiceHandler.post(() -> {
         mGeohashRTFilter.stop();
+        if (mBluetoothManager != null) {
+          mBluetoothManager.stopScanHeartRate();
+        }
         if (mGeohashRTFilter.getGeoFilteredTrack().size() > 0) {
           mRepository.saveGeoFilteredTrack(mFitActivityId, mGeohashRTFilter.getGeoFilteredTrack());
           Utils.logd(TAG, " geofiltered locations saved to DB");
@@ -278,6 +286,11 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   @Override
+  public void onHeartRateRead(int heartRateValue) {
+    mRepository.saveHeartRate(new HeartRateModel(heartRateValue, mFitActivityId));
+  }
+
+  @Override
   public void locationChanged(Location location) {
     if (Utils.requestingLocationUpdates(this)) {
       // tracking user's activity
@@ -292,8 +305,13 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   @Override
   public void onDestroy() {
     Utils.logd(TAG, "Service on destroy");
+    Utils.logd(TAG, "bluetoothManager " + (mBluetoothManager == null ? "Null" : "NotNull"));
     handlerThread.quitSafely();
     ServicesHelper.removeLocationServiceInterface(this);
+    if (mBluetoothManager != null) {
+      mBluetoothManager.stop();
+    }
+    super.onDestroy();
   }
 
   public void continueTracking() {
@@ -309,6 +327,12 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     if (mCurrentFitActivity != null) {
       mCurrentFitActivity.setStatus(FitActivity.STATUS_PAUSED);
     }
+  }
+
+  public void setBtAddress(String deviceAddress) {
+    mBluetoothManager = new BluetoothDeviceManager(this, deviceAddress);
+    mBluetoothManager.setListener(this);
+    Utils.logd(TAG, "bluetoothManager " + (mBluetoothManager == null ? "Null" : "NotNull"));
   }
 
   public class LocalBinder extends Binder {

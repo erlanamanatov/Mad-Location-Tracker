@@ -1,6 +1,7 @@
 package com.erkprog.madlocationtracker.ui.trackFitActivity;
 
 import android.Manifest;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -32,6 +34,7 @@ import android.widget.Toast;
 import com.erkprog.madlocationtracker.LocationUpdatesService;
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.data.entity.ChronometerController;
+import com.erkprog.madlocationtracker.ui.btScanActivity.BtScanActivity;
 import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -56,12 +59,13 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     OnMapReadyCallback,
     TrackActivityContract.View {
   private static final String TAG = "TrackFitActivity";
+  private static final int REQUEST_BT_DEVICES = 99;
 
   public static final int BT_STATE_INITIAL = 5;
   public static final int BT_STATE_TRACKING = 6;
   public static final int BT_STATE_PAUSED = 7;
 
-  Button btStart, btStop;
+  Button btStart, btStop, btScan;
   TextView tvDistance;
   Chronometer chronometer;
   private long pausedTime;
@@ -82,6 +86,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   private static final float ROUTE_WIDTH = 25;
   private static final String ROUTE_COLOR = "#801B60FE";
 
+  private String mDeviceAddress;
+
   private boolean mBound = false;
 
   private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -92,6 +98,10 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       mService = binder.getService();
       mBound = true;
       mPresenter.onServiceConnected(Utils.requestingLocationUpdates(TrackFitActivity.this));
+      if (mDeviceAddress != null) {
+        mService.setBtAddress(mDeviceAddress);
+        mDeviceAddress = null;
+      }
     }
 
     @Override
@@ -347,6 +357,11 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       case R.id.button_stop_tracking:
         mPresenter.onBtStopClicked();
         break;
+
+      case R.id.button_bt_scan:
+        Intent intent = new Intent(this, BtScanActivity.class);
+        startActivityForResult(intent, REQUEST_BT_DEVICES);
+        break;
     }
   }
 
@@ -385,6 +400,18 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     }
   }
 
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    if (requestCode == REQUEST_BT_DEVICES && resultCode == RESULT_OK && data != null) {
+      String deviceAddress = data.getStringExtra(BtScanActivity.EXTRA_DEVICE_ADDRESS);
+      if (deviceAddress != null) {
+        Toast.makeText(TrackFitActivity.this, deviceAddress, Toast.LENGTH_SHORT).show();
+//        mService.setBtAddress(deviceAddress);
+        mDeviceAddress = deviceAddress;
+      }
+    }
+  }
+
   private class FitActivityReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -407,6 +434,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     btStart.setOnClickListener(this);
     btStop = findViewById(R.id.button_stop_tracking);
     btStop.setOnClickListener(this);
+    btScan = findViewById(R.id.button_bt_scan);
+    btScan.setOnClickListener(this);
     userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
     tvDistance = findViewById(R.id.cr_act_distance);
     chronometer = findViewById(R.id.cr_act_time);

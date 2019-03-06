@@ -6,10 +6,18 @@ import android.location.Location;
 
 import com.erkprog.madlocationtracker.data.db.AppDatabase;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
+import com.erkprog.madlocationtracker.data.entity.HeartRateModel;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
+import com.erkprog.madlocationtracker.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.Completable;
+import io.reactivex.CompletableObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class LocalRepository {
 
@@ -56,5 +64,27 @@ public class LocalRepository {
       list.add(new LocationItem(loc, fitActivityId, LocationItem.TAG_GEO_FILTERED));
     }
     return list;
+  }
+
+  public void saveHeartRate(HeartRateModel heartRate) {
+    Completable.fromAction(() -> mDatabase.heartRateDao().addHeartRate(heartRate))
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new CompletableObserver() {
+          @Override
+          public void onSubscribe(Disposable d) {
+
+          }
+
+          @Override
+          public void onComplete() {
+            Utils.logd(TAG, "heartrate saved, :" + heartRate.toString());
+          }
+
+          @Override
+          public void onError(Throwable e) {
+            Utils.loge(TAG, "saving error, heartrate: " + heartRate.toString());
+          }
+        });
   }
 }
