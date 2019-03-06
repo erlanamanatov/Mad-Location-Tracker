@@ -309,10 +309,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     handlerThread.quitSafely();
     ServicesHelper.removeLocationServiceInterface(this);
     if (mBluetoothManager != null) {
-      Utils.logd(TAG, "btManager not null");
       mBluetoothManager.stop();
-    } else {
-      Utils.logd(TAG, "btManager is null");
     }
     super.onDestroy();
   }
@@ -335,7 +332,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public void setBtAddress(String deviceAddress) {
     mBluetoothManager = new BluetoothDeviceManager(this, deviceAddress);
     mBluetoothManager.setListener(this);
-    mBluetoothManager.start();
     Utils.logd(TAG, "bluetoothManager " + (mBluetoothManager == null ? "Null" : "NotNull"));
   }
 

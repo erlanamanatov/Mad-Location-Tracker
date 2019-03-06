@@ -22,7 +22,6 @@ class BluetoothDeviceManager {
   private static final String TAG = "BluetoothDeviceManager";
 
   private RxBleDevice mBleDevice;
-//  private BluetoothGatt mBluetoothGatt;
   private Handler mHrHandler;
   private BluetoothResultListener mListener;
 
@@ -62,7 +61,6 @@ class BluetoothDeviceManager {
 
     final Disposable connectionDisposable = connectionObservable
         .flatMapSingle(RxBleConnection::discoverServices)
-//        .flatMapSingle(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(MiBandServiceConst.Basic.stepsCharacteristic))
         .flatMapSingle(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(MiBandServiceConst.HeartRate.measurementCharacteristic))
         .observeOn(AndroidSchedulers.mainThread())
 //        .doOnSubscribe(disposable -> connectButton.setText(R.string.connecting))
@@ -76,20 +74,6 @@ class BluetoothDeviceManager {
         );
 
     compositeDisposable.add(connectionDisposable);
-
-//    final Disposable rConDisp = connectionObservable
-//        .flatMapSingle(RxBleConnection::discoverServices)
-//        .flatMapSingle(rxBleDeviceServices -> rxBleDeviceServices.getCharacteristic(MiBandServiceConst.Basic.stepsCharacteristic))
-//        .observeOn(AndroidSchedulers.mainThread())
-//        .subscribe(
-//            characteristic -> {
-//              Utils.logd(TAG, "Start, steps connection has been established!");
-//            },
-//            this::onConnectionFailure,
-//            this::onConnectionFinished
-//        );
-//    compositeDisposable.add(rConDisp);
-
   }
 
   private void onConnectionFailure(Throwable throwable) {
@@ -119,42 +103,11 @@ class BluetoothDeviceManager {
     }
   }
 
-  private void handleSteps(byte[] value) {
-    Utils.logd(TAG, "handle steps, data : " + Arrays.toString(value));
-  }
 
-//  private void stateConnected() {
-//    mBluetoothGatt.discoverServices();
-//  }
-
-  private void getStepsCount() {
-    Utils.logd(TAG, "getting steps count");
-    if (isConnected()) {
-      final Disposable disposable = connectionObservable
-          .firstOrError()
-          .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(MiBandServiceConst.Basic.stepsCharacteristic))
-          .observeOn(AndroidSchedulers.mainThread())
-          .subscribe(bytes -> {
-            Utils.logd(TAG, "steps : " + Arrays.toString(bytes));
-          }, this::onReadFailure);
-
-      compositeDisposable.add(disposable);
-    }
-  }
-
-  private void onReadFailure(Throwable throwable) {
-    Utils.loge(TAG, "Read error: " + throwable);
-  }
-
-
-//  private void stateDisconnected() {
-//    mBluetoothGatt.disconnect();
-//  }
 
   void startScanHeartRate() {
-
+    start();
     mHeartTask.run();
-
 //    getStepsCount();
 //    getHeartRate();
   }
@@ -236,4 +189,27 @@ class BluetoothDeviceManager {
       mHrHandler.postDelayed(mHeartTask, HEART_RATE_UPDATE_INTERVAL);
     }
   };
+
+  private void handleSteps(byte[] value) {
+    Utils.logd(TAG, "handle steps, data : " + Arrays.toString(value));
+  }
+
+  private void getStepsCount() {
+    Utils.logd(TAG, "getting steps count");
+    if (isConnected()) {
+      final Disposable disposable = connectionObservable
+          .firstOrError()
+          .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(MiBandServiceConst.Basic.stepsCharacteristic))
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribe(bytes -> {
+            Utils.logd(TAG, "steps : " + Arrays.toString(bytes));
+          }, this::onReadFailure);
+
+      compositeDisposable.add(disposable);
+    }
+  }
+
+  private void onReadFailure(Throwable throwable) {
+    Utils.loge(TAG, "Read error: " + throwable);
+  }
 }
