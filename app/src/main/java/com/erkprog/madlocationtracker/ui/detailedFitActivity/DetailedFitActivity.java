@@ -13,6 +13,7 @@ import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
+import com.github.mikephil.charting.charts.LineChart;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -38,6 +39,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   private TextView tvDuration;
   private TextView tvAvgSpeed;
   private TextView tvTrackingTime;
+  private LineChart mLineChart;
 
   private GoogleMap mMap;
   private static final int MAP_PADDING = 80;
@@ -62,6 +64,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mPresenter = new DetailedActivityPresenter(AppApplication.getInstance().getRepository(), fitActivity);
     mPresenter.bind(this);
     mPresenter.processFitActivity(fitActivity);
+    mLineChart = findViewById(R.id.chart);
   }
 
   @Override

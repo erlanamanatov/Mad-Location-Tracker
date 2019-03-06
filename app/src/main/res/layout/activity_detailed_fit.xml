@@ -12,13 +12,25 @@
             xmlns:map="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginBottom="4dp"
-            map:layout_constraintBottom_toTopOf="@+id/act_detail_distance"
+            android:layout_marginBottom="8dp"
+            map:layout_constraintBottom_toTopOf="@+id/chart"
             map:layout_constraintEnd_toEndOf="parent"
             map:layout_constraintHorizontal_bias="0.0"
             map:layout_constraintStart_toStartOf="parent"
             map:layout_constraintTop_toTopOf="parent"
+            map:liteMode="true"
             tools:context=".ui.detailedFitActivity.DetailedFitActivity"/>
+
+  <com.github.mikephil.charting.charts.LineChart
+      android:id="@+id/chart"
+      android:layout_width="0dp"
+      android:layout_height="200dp"
+      android:layout_marginEnd="8dp"
+      android:layout_marginStart="8dp"
+      app:layout_constraintBottom_toTopOf="@+id/act_detail_distance"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      />
 
   <TextView
       android:id="@+id/textView"
