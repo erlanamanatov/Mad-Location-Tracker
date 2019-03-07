@@ -21,6 +21,8 @@ import io.reactivex.subjects.PublishSubject;
 class BluetoothDeviceManager {
   private static final String TAG = "BluetoothDeviceManager";
 
+  private Context mContext;
+
   private RxBleDevice mBleDevice;
   private Handler mHrHandler;
   private BluetoothResultListener mListener;
@@ -29,6 +31,8 @@ class BluetoothDeviceManager {
   private Observable<RxBleConnection> connectionObservable;
   private final CompositeDisposable compositeDisposable = new CompositeDisposable();
   private PublishSubject<Boolean> disconnectTriggerSubject = PublishSubject.create();
+
+  private int failedCount = 0;
 
 
   private static final int HEART_RATE_UPDATE_INTERVAL = 30 * 1000;
@@ -39,9 +43,10 @@ class BluetoothDeviceManager {
 
   BluetoothDeviceManager(Context context, String deviceAddress) {
     Utils.logd(TAG, "constructor");
+    mContext = context;
     mBleClient = RxBleClient.create(context);
     mBleDevice = mBleClient.getBleDevice(deviceAddress);
-    mHrHandler = new Handler();
+    mHrHandler = new Handler(context.getMainLooper());
     connectionObservable = prepareConnectionObservable();
   }
 
@@ -103,15 +108,14 @@ class BluetoothDeviceManager {
     }
   }
 
-
-  void startScanHeartRate() {
+  private void startScanHeartRate() {
     Utils.logd(TAG, "start scanning heart rate");
-    mHeartTask.run();
+    mHrHandler.post(mHeartTask);
   }
 
   void stopScanHeartRate() {
     Utils.logd(TAG, "stopScanHeartRate");
-    mHrHandler.removeCallbacks(mHeartTask);
+    removeHrCallbacks();
     compositeDisposable.clear();
   }
 
@@ -131,8 +135,7 @@ class BluetoothDeviceManager {
       compositeDisposable.add(disposable);
     } else {
       Utils.loge(TAG, "device not connected");
-//      compositeDisposable.clear();
-//      start();
+      removeHrCallbacks();
     }
   }
 
@@ -144,6 +147,22 @@ class BluetoothDeviceManager {
     Utils.logd(TAG, "onWriteFailure, " + throwable);
   }
 
+  private void removeHrCallbacks() {
+    Handler stHandler = new Handler(mContext.getMainLooper());
+    stHandler.post(() -> mHrHandler.removeCallbacks(mHeartTask));
+  }
+
+  private void reconnect() {
+    if (failedCount < 8) {
+      Utils.logd(TAG, "reconnect starts");
+      removeHrCallbacks();
+      compositeDisposable.clear();
+      start();
+      failedCount++;
+    } else {
+      Utils.loge(TAG, "Failed count = " + failedCount);
+    }
+  }
 
   private void setHeartRateNotification() {
 
@@ -164,12 +183,8 @@ class BluetoothDeviceManager {
   }
 
   private void onNotificationReceived(byte[] bytes) {
-    try {
-      Utils.logd(TAG, "onNotificationReceived " + Arrays.toString(bytes));
-      handleHeartrate(bytes);
-    } catch (Exception e) {
-      Utils.loge(TAG, "onNotificationReceived, : " + e.getMessage());
-    }
+    Utils.logd(TAG, "onNotificationReceived " + Arrays.toString(bytes));
+    handleHeartrate(bytes);
   }
 
   private void onNotificationSetupFailure(Throwable throwable) {
@@ -179,14 +194,14 @@ class BluetoothDeviceManager {
   void stop() {
     Utils.logd(TAG, "Stop");
     stopScanHeartRate();
-    compositeDisposable.clear();
+    compositeDisposable.dispose();
   }
 
   private Runnable mHeartTask = new Runnable() {
     @Override
     public void run() {
       getHeartRate();
-      mHrHandler.postDelayed(mHeartTask, HEART_RATE_UPDATE_INTERVAL);
+      mHrHandler.postDelayed(this, HEART_RATE_UPDATE_INTERVAL);
     }
   };
 
