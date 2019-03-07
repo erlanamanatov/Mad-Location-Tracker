@@ -104,12 +104,9 @@ class BluetoothDeviceManager {
   }
 
 
-
   void startScanHeartRate() {
-    start();
+    Utils.logd(TAG, "start scanning heart rate");
     mHeartTask.run();
-//    getStepsCount();
-//    getHeartRate();
   }
 
   void stopScanHeartRate() {
@@ -134,8 +131,8 @@ class BluetoothDeviceManager {
       compositeDisposable.add(disposable);
     } else {
       Utils.loge(TAG, "device not connected");
-      compositeDisposable.clear();
-      start();
+//      compositeDisposable.clear();
+//      start();
     }
   }
 
@@ -154,7 +151,10 @@ class BluetoothDeviceManager {
     if (isConnected()) {
       final Disposable disposable = connectionObservable
           .flatMap(rxBleConnection -> rxBleConnection.setupNotification(MiBandServiceConst.HeartRate.measurementCharacteristic))
-          .doOnNext(notificationObservable -> Utils.logd(TAG, "notification has been set up"))
+          .doOnNext(notificationObservable -> {
+            Utils.logd(TAG, "notification has been set up");
+            startScanHeartRate();
+          })
           .flatMap(notificationObservable -> notificationObservable)
           .observeOn(AndroidSchedulers.mainThread())
           .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure);
