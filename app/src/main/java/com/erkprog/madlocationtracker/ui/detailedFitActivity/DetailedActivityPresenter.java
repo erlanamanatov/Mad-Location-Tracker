@@ -63,10 +63,11 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
             }
           }
         });
+  }
 
-
-    Utils.logd(TAG, "getLocations , id " + mFitActivity.getId());
-
+  @Override
+  public void getHeartRate() {
+    Utils.logd(TAG, "getHeartRate data , fitId " + mFitActivity.getId());
     mRepository.getDatabase().heartRateDao()
         .getHeartRateByFitId(mFitActivity.getId())
         .subscribeOn(Schedulers.io())
@@ -79,16 +80,20 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
 
           @Override
           public void onSuccess(List<HeartRateModel> heartRateModels) {
-            Utils.logd(TAG, "heartRate size : " + heartRateModels.size());
-            long reference_timestamp = heartRateModels.get(0).getDate().getTime();
-            List<Entry> entries = new ArrayList<Entry>();
-            float i = 1f;
-            for (HeartRateModel model: heartRateModels) {
-//              entries.add(new Entry(i, (float) model.getValue()));
-              entries.add(new Entry((float) (model.getDate().getTime() - reference_timestamp), (float) model.getValue()));
-              i += 1;
+            if (!isAttached()) {
+              return;
             }
-            mView.plotGraph(entries, reference_timestamp);
+            if (heartRateModels.size() < 4) {
+              mView.showMessage(R.string.not_enough_hr_data);
+              return;
+            }
+            Utils.logd(TAG, "heartRate data size : " + heartRateModels.size());
+            long referenceTimestamp = heartRateModels.get(0).getDate().getTime();
+            List<Entry> entries = new ArrayList<>();
+            for (HeartRateModel model : heartRateModels) {
+              entries.add(new Entry((float) (model.getDate().getTime() - referenceTimestamp), (float) model.getValue()));
+            }
+            mView.plotGraph(entries, referenceTimestamp);
           }
 
           @Override

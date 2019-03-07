@@ -33,5 +33,7 @@ class DetailedFitActivityContract {
     void getLocations();
 
     void processFitActivity(FitActivity fitActivity);
+
+    void getHeartRate();
   }
 }

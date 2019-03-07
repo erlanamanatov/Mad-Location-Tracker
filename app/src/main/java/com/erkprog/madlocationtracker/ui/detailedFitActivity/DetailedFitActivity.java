@@ -6,12 +6,12 @@ import android.graphics.Color;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.utils.HourAxisValueFormatter;
-import com.erkprog.madlocationtracker.utils.Utils;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.github.mikephil.charting.charts.LineChart;
@@ -71,6 +71,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mPresenter.bind(this);
     mPresenter.processFitActivity(fitActivity);
     mLineChart = findViewById(R.id.chart);
+    mLineChart.setVisibility(View.GONE);
   }
 
   @Override
@@ -80,10 +81,12 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mMap.getUiSettings().setTiltGesturesEnabled(false);
     mMap.setOnMarkerClickListener(marker -> true);
     mPresenter.getLocations();
+    mPresenter.getHeartRate();
   }
 
   @Override
   public void plotGraph(List<Entry> entries, long referenceTimestamp) {
+    mLineChart.setVisibility(View.VISIBLE);
     IAxisValueFormatter xAxisFormatter = new HourAxisValueFormatter(referenceTimestamp);
     XAxis xAxis = mLineChart.getXAxis();
     xAxis.setValueFormatter(xAxisFormatter);
