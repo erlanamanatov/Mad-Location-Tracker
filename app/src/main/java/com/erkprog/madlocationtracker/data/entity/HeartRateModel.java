@@ -8,10 +8,13 @@ import android.arch.persistence.room.PrimaryKey;
 import java.util.Calendar;
 import java.util.Date;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 @Entity(tableName = "HeartRate",
     foreignKeys = @ForeignKey(entity = FitActivity.class,
         parentColumns = "id",
-        childColumns = "activity_id"))
+        childColumns = "activity_id",
+        onDelete = CASCADE))
 public class HeartRateModel {
 
   @PrimaryKey(autoGenerate = true)

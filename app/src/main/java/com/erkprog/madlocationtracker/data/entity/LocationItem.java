@@ -11,10 +11,13 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.Calendar;
 import java.util.Date;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 @Entity(tableName = "locations",
     foreignKeys = @ForeignKey(entity = FitActivity.class,
         parentColumns = "id",
-        childColumns = "activity_id"))
+        childColumns = "activity_id",
+    onDelete = CASCADE))
 public class LocationItem {
 
   // locations only kalman filtered
