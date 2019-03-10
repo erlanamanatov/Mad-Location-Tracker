@@ -20,4 +20,6 @@
   <string name="resume">Resume</string>
   <string name="finish">Finish</string>
   <string name="empty_db_message">You don\'t have \ntracked activities</string>
+  <string name="available_devices">Available devices</string>
+  <string name="refresh">Refresh</string>
 </resources>
