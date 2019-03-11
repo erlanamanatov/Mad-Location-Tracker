@@ -2,10 +2,11 @@ package com.erkprog.madlocationtracker.ui.trackFitActivity;
 
 import android.location.Location;
 
+import com.erkprog.madlocationtracker.FitActivityStateListener;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.utils.Utils;
 
-public class TrackActivityPresenter implements TrackActivityContract.Presenter {
+public class TrackActivityPresenter implements TrackActivityContract.Presenter, FitActivityStateListener {
 
   private static final String TAG = "TrackActivityPresenter";
 
@@ -105,4 +106,10 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter {
     mView = null;
   }
 
+  @Override
+  public void onHeartRateRead(int value) {
+    if (isAttached()) {
+      mView.showMessage(String.valueOf(value));
+    }
+  }
 }

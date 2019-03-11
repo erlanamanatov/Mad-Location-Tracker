@@ -63,6 +63,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   private Location mLocation;
   private LocalRepository mRepository;
   private ArrayList<Location> listLocations;
+  private FitActivityStateListener mListener;
 
   public LocationUpdatesService() {
   }
@@ -288,6 +289,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   @Override
   public void onHeartRateRead(int heartRateValue) {
     mRepository.saveHeartRate(new HeartRateModel(heartRateValue, mFitActivityId));
+    if (mListener != null) {
+      mListener.onHeartRateRead(heartRateValue);
+    }
   }
 
   @Override
@@ -333,6 +337,14 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     mBluetoothManager = new BluetoothDeviceManager(this, deviceAddress);
     mBluetoothManager.setListener(this);
     Utils.logd(TAG, "bluetoothManager " + (mBluetoothManager == null ? "Null" : "NotNull"));
+  }
+
+  public void addFitListener(FitActivityStateListener listener) {
+    mListener = listener;
+  }
+
+  public void removeFitListener(FitActivityStateListener listener) {
+    mListener = null;
   }
 
   public class LocalBinder extends Binder {

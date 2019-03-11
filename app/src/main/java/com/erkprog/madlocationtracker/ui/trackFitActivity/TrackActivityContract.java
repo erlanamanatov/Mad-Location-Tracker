@@ -2,6 +2,7 @@ package com.erkprog.madlocationtracker.ui.trackFitActivity;
 
 import android.location.Location;
 
+import com.erkprog.madlocationtracker.FitActivityStateListener;
 import com.erkprog.madlocationtracker.ILifeCycle;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 
@@ -42,7 +43,7 @@ class TrackActivityContract {
     void showMessage(String message);
   }
 
-  interface Presenter extends ILifeCycle<View> {
+  interface Presenter extends ILifeCycle<View>, FitActivityStateListener {
 
     boolean isAttached();
 

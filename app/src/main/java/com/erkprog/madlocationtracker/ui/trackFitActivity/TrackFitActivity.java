@@ -1,7 +1,6 @@
 package com.erkprog.madlocationtracker.ui.trackFitActivity;
 
 import android.Manifest;
-import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -98,6 +97,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       mService = binder.getService();
       mBound = true;
       mPresenter.onServiceConnected(Utils.requestingLocationUpdates(TrackFitActivity.this));
+      mService.addFitListener(mPresenter);
       if (mDeviceAddress != null) {
         mService.setBtAddress(mDeviceAddress);
         mDeviceAddress = null;
@@ -106,6 +106,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
+      mService.removeFitListener(mPresenter);
       mService = null;
       mBound = false;
     }
