@@ -22,6 +22,7 @@ import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 import com.erkprog.madlocationtracker.ui.trackFitActivity.TrackFitActivity;
 import com.erkprog.madlocationtracker.utils.KalmanFilterSettings;
 import com.erkprog.madlocationtracker.utils.Utils;
+import com.polidea.rxandroidble2.RxBleConnection;
 
 
 import java.util.ArrayList;
@@ -291,6 +292,13 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     mRepository.saveHeartRate(new HeartRateModel(heartRateValue, mFitActivityId));
     if (mListener != null) {
       mListener.onHeartRateRead(heartRateValue);
+    }
+  }
+
+  @Override
+  public void onConnectionStateChanged(RxBleConnection.RxBleConnectionState state) {
+    if (mListener != null) {
+      mListener.onBluetoothConnectionStateChanged(state);
     }
   }
 

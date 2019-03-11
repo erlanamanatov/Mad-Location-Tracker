@@ -5,6 +5,7 @@ import android.location.Location;
 import com.erkprog.madlocationtracker.FitActivityStateListener;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.utils.Utils;
+import com.polidea.rxandroidble2.RxBleConnection;
 
 public class TrackActivityPresenter implements TrackActivityContract.Presenter, FitActivityStateListener {
 
@@ -110,6 +111,13 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter, 
   public void onHeartRateRead(int value) {
     if (isAttached()) {
       mView.showMessage(String.valueOf(value));
+    }
+  }
+
+  @Override
+  public void onBluetoothConnectionStateChanged(RxBleConnection.RxBleConnectionState state) {
+    if (isAttached()) {
+      mView.showMessage(state.toString());
     }
   }
 }

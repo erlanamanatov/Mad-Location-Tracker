@@ -39,6 +39,10 @@ class BluetoothDeviceManager {
 
   interface BluetoothResultListener {
     void onHeartRateRead(int heartRateValue);
+
+    void onConnectionStateChanged(RxBleConnection.RxBleConnectionState state);
+
+
   }
 
   BluetoothDeviceManager(Context context, String deviceAddress) {
@@ -78,7 +82,16 @@ class BluetoothDeviceManager {
             this::onConnectionFinished
         );
 
+    Disposable connStateDisposable = mBleDevice.observeConnectionStateChanges()
+        .subscribe(
+            connectionState -> {
+              mListener.onConnectionStateChanged(connectionState);
+            },
+            throwable -> {
+            });
+
     compositeDisposable.add(connectionDisposable);
+    compositeDisposable.add(connStateDisposable);
   }
 
   private void onConnectionFailure(Throwable throwable) {
