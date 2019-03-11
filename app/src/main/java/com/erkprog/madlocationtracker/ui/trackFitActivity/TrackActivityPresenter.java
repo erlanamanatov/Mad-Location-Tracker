@@ -110,21 +110,21 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter, 
   @Override
   public void onHeartRateRead(int value) {
     if (isAttached()) {
-      mView.showMessage(String.valueOf(value));
+      mView.showHeartRateValue(value);
     }
   }
 
   @Override
   public void onBluetoothConnectionStateChanged(RxBleConnection.RxBleConnectionState state) {
     if (isAttached()) {
-      mView.showMessage(state.toString());
+      mView.showBluetoothConnectionState(state.toString());
     }
   }
 
   @Override
   public void onStartMeasuringHeartRate() {
     if (isAttached()) {
-     mView.showMessage("Start measuring");
+      mView.onStartMeasuringHeartRate();
     }
   }
 }

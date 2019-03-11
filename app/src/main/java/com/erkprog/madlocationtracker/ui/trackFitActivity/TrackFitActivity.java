@@ -52,6 +52,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class TrackFitActivity extends AppCompatActivity implements View.OnClickListener,
     SharedPreferences.OnSharedPreferenceChangeListener,
@@ -84,6 +85,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   private BitmapDescriptor userPositionIcon;
   private static final float ROUTE_WIDTH = 25;
   private static final String ROUTE_COLOR = "#801B60FE";
+  private TextView tvHeartRate;
 
   private String mDeviceAddress;
 
@@ -244,6 +246,21 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 //    long trackingDuration = SystemClock.elapsedRealtime() - chronometer.getBase();
     long trackingDuration = pausedTime - chronometer.getBase();
     mService.stopTracking(trackingDuration);
+  }
+
+  @Override
+  public void showHeartRateValue(int value) {
+    tvHeartRate.setText(String.format(Locale.UK, "Heart rate: %d", value));
+  }
+
+  @Override
+  public void showBluetoothConnectionState(String state) {
+    showMessage(state);
+  }
+
+  @Override
+  public void onStartMeasuringHeartRate() {
+    tvHeartRate.setText(getString(R.string.measuring));
   }
 
   @Override
@@ -442,6 +459,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     tvDistance = findViewById(R.id.cr_act_distance);
     chronometer = findViewById(R.id.cr_act_time);
     chController = ChronometerController.getInstance();
+    tvHeartRate = findViewById(R.id.tv_heart_rate);
   }
 
   @Override
