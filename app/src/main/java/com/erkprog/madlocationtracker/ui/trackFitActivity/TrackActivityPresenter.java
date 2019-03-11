@@ -120,4 +120,11 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter, 
       mView.showMessage(state.toString());
     }
   }
+
+  @Override
+  public void onStartMeasuringHeartRate() {
+    if (isAttached()) {
+     mView.showMessage("Start measuring");
+    }
+  }
 }

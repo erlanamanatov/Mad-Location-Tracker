@@ -303,6 +303,13 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   }
 
   @Override
+  public void onRequestingHeartRate() {
+    if (mListener != null) {
+     mListener.onStartMeasuringHeartRate();
+    }
+  }
+
+  @Override
   public void locationChanged(Location location) {
     if (Utils.requestingLocationUpdates(this)) {
       // tracking user's activity

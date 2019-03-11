@@ -42,7 +42,7 @@ class BluetoothDeviceManager {
 
     void onConnectionStateChanged(RxBleConnection.RxBleConnectionState state);
 
-
+    void onRequestingHeartRate();
   }
 
   BluetoothDeviceManager(Context context, String deviceAddress) {
@@ -154,6 +154,7 @@ class BluetoothDeviceManager {
 
   private void onWriteSuccess() {
     Utils.logd(TAG, "onWriteSuccess");
+    mListener.onRequestingHeartRate();
   }
 
   private void onWriteFailure(Throwable throwable) {

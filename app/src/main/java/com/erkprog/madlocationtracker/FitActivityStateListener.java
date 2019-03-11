@@ -7,4 +7,6 @@ public interface FitActivityStateListener {
   void onHeartRateRead(int value);
 
   void onBluetoothConnectionStateChanged(RxBleConnection.RxBleConnectionState state);
+
+  void onStartMeasuringHeartRate();
 }
