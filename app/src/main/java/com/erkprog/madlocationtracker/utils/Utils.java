@@ -27,8 +27,11 @@ public class Utils {
 
   public static String getFormattedDate(Date resourceDate) {
     try {
-      SimpleDateFormat formatter = new SimpleDateFormat("EEEE, MMM d", new Locale("en"));
-      return formatter.format(resourceDate);
+      SimpleDateFormat dayMonth = new SimpleDateFormat("EEEE, MMM d", new Locale("en"));
+      SimpleDateFormat hourMinute = new SimpleDateFormat("hh:mm a", new Locale("en"));
+      String dm =  dayMonth.format(resourceDate);
+      String hm =  hourMinute.format(resourceDate);
+      return String.format("%s at %s", dm, hm);
     } catch (Exception e) {
       return "?";
     }

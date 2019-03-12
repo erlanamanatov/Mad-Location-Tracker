@@ -195,4 +195,3 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mPresenter.unBind();
   }
 }
-

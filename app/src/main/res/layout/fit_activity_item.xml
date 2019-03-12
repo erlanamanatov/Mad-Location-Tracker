@@ -30,7 +30,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fitact_date">
 
@@ -38,9 +37,11 @@
           android:id="@+id/textView8"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
+          android:layout_marginEnd="8dp"
           android:layout_marginStart="8dp"
           android:layout_marginTop="8dp"
           android:text="@string/distance"
+          app:layout_constraintEnd_toEndOf="parent"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toTopOf="parent"/>
 
@@ -50,6 +51,7 @@
           android:layout_height="wrap_content"
           android:layout_marginBottom="8dp"
           android:layout_marginTop="8dp"
+          android:textColor="@android:color/black"
           app:layout_constraintBottom_toBottomOf="parent"
           app:layout_constraintStart_toStartOf="@+id/textView8"
           app:layout_constraintTop_toBottomOf="@+id/textView8"
@@ -58,9 +60,9 @@
 
     <View
         android:id="@+id/view3"
-        android:layout_width="5dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="12dp"
+        android:layout_width="3dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
         android:background="@color/delimiterColorBackground"
         app:layout_constraintBottom_toBottomOf="@+id/constraintLayout"
         app:layout_constraintStart_toEndOf="@+id/constraintLayout"
@@ -69,8 +71,7 @@
     <android.support.constraint.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        app:layout_constraintBottom_toBottomOf="@+id/constraintLayout"
+        android:layout_marginStart="8dp"
         app:layout_constraintStart_toEndOf="@+id/view3"
         app:layout_constraintTop_toTopOf="@+id/constraintLayout">
 
@@ -78,9 +79,11 @@
           android:id="@+id/textViewTime"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
+          android:layout_marginEnd="8dp"
           android:layout_marginStart="8dp"
           android:layout_marginTop="8dp"
           android:text="@string/duration"
+          app:layout_constraintEnd_toEndOf="parent"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toTopOf="parent"/>
 
@@ -88,9 +91,13 @@
           android:id="@+id/fitact_time"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
+          android:layout_marginBottom="8dp"
           android:layout_marginTop="8dp"
+          android:textColor="@android:color/black"
+          app:layout_constraintBottom_toBottomOf="parent"
           app:layout_constraintStart_toStartOf="@+id/textViewTime"
-          app:layout_constraintTop_toBottomOf="@+id/textViewTime"/>
+          app:layout_constraintTop_toBottomOf="@+id/textViewTime"
+          tools:text="1h 13m"/>
     </android.support.constraint.ConstraintLayout>
 
   </android.support.constraint.ConstraintLayout>
