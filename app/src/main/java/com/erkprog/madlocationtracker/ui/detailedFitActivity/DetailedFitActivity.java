@@ -145,8 +145,30 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     displayLastLocation(locationItems.get(locationItems.size() - 1));
 
     LatLngBounds bounds = builder.build();
+    bounds = adjustBoundsForMaxZoomLevel(bounds);
     CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, MAP_PADDING);
     mMap.moveCamera(cu);
+  }
+
+  private LatLngBounds adjustBoundsForMaxZoomLevel(LatLngBounds bounds) {
+    LatLng sw = bounds.southwest;
+    LatLng ne = bounds.northeast;
+    double deltaLat = Math.abs(sw.latitude - ne.latitude);
+    double deltaLon = Math.abs(sw.longitude - ne.longitude);
+
+    final double zoomN = 0.001;
+    if (deltaLat < zoomN) {
+      sw = new LatLng(sw.latitude - (zoomN - deltaLat / 2), sw.longitude);
+      ne = new LatLng(ne.latitude + (zoomN - deltaLat / 2), ne.longitude);
+      bounds = new LatLngBounds(sw, ne);
+    }
+    else if (deltaLon < zoomN) {
+      sw = new LatLng(sw.latitude, sw.longitude - (zoomN - deltaLon / 2));
+      ne = new LatLng(ne.latitude, ne.longitude + (zoomN - deltaLon / 2));
+      bounds = new LatLngBounds(sw, ne);
+    }
+
+    return bounds;
   }
 
   private void displayLastLocation(LocationItem locationItem) {

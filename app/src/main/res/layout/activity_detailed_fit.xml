@@ -18,7 +18,6 @@
             map:layout_constraintHorizontal_bias="0.0"
             map:layout_constraintStart_toStartOf="parent"
             map:layout_constraintTop_toTopOf="parent"
-            map:liteMode="true"
             tools:context=".ui.detailedFitActivity.DetailedFitActivity"/>
 
   <com.github.mikephil.charting.charts.LineChart
