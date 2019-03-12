@@ -2,13 +2,18 @@ package com.erkprog.madlocationtracker.ui.detailedFitActivity;
 
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
+import com.erkprog.madlocationtracker.data.entity.HeartRateModel;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 import com.erkprog.madlocationtracker.utils.Utils;
+import com.github.mikephil.charting.data.Entry;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.MaybeObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
 
@@ -56,6 +61,49 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
             if (isAttached()) {
               mView.showMessage(R.string.error_loading_detailed_data);
             }
+          }
+        });
+  }
+
+  @Override
+  public void getHeartRate() {
+    Utils.logd(TAG, "getHeartRate data , fitId " + mFitActivity.getId());
+    mRepository.getDatabase().heartRateDao()
+        .getHeartRateByFitId(mFitActivity.getId())
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new MaybeObserver<List<HeartRateModel>>() {
+          @Override
+          public void onSubscribe(Disposable d) {
+
+          }
+
+          @Override
+          public void onSuccess(List<HeartRateModel> heartRateModels) {
+            if (!isAttached()) {
+              return;
+            }
+            if (heartRateModels.size() < 4) {
+              mView.showMessage(R.string.not_enough_hr_data);
+              return;
+            }
+            Utils.logd(TAG, "heartRate data size : " + heartRateModels.size());
+            long referenceTimestamp = heartRateModels.get(0).getDate().getTime();
+            List<Entry> entries = new ArrayList<>();
+            for (HeartRateModel model : heartRateModels) {
+              entries.add(new Entry((float) (model.getDate().getTime() - referenceTimestamp), (float) model.getValue()));
+            }
+            mView.plotGraph(entries, referenceTimestamp);
+          }
+
+          @Override
+          public void onError(Throwable e) {
+            Utils.logd(TAG, "heartRate error: " + e);
+          }
+
+          @Override
+          public void onComplete() {
+            Utils.logd(TAG, "heart Rate empty");
           }
         });
   }

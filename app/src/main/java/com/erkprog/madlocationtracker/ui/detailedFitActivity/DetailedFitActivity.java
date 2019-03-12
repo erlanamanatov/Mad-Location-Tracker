@@ -6,13 +6,20 @@ import android.graphics.Color;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 import com.erkprog.madlocationtracker.AppApplication;
 import com.erkprog.madlocationtracker.R;
-import com.erkprog.madlocationtracker.utils.Utils;
+import com.erkprog.madlocationtracker.utils.HourAxisValueFormatter;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -38,6 +45,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   private TextView tvDuration;
   private TextView tvAvgSpeed;
   private TextView tvTrackingTime;
+  private LineChart mLineChart;
 
   private GoogleMap mMap;
   private static final int MAP_PADDING = 80;
@@ -62,6 +70,8 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mPresenter = new DetailedActivityPresenter(AppApplication.getInstance().getRepository(), fitActivity);
     mPresenter.bind(this);
     mPresenter.processFitActivity(fitActivity);
+    mLineChart = findViewById(R.id.chart);
+    mLineChart.setVisibility(View.GONE);
   }
 
   @Override
@@ -71,6 +81,20 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mMap.getUiSettings().setTiltGesturesEnabled(false);
     mMap.setOnMarkerClickListener(marker -> true);
     mPresenter.getLocations();
+    mPresenter.getHeartRate();
+  }
+
+  @Override
+  public void plotGraph(List<Entry> entries, long referenceTimestamp) {
+    mLineChart.setVisibility(View.VISIBLE);
+    IAxisValueFormatter xAxisFormatter = new HourAxisValueFormatter(referenceTimestamp);
+    XAxis xAxis = mLineChart.getXAxis();
+    xAxis.setValueFormatter(xAxisFormatter);
+    LineDataSet dataSet = new LineDataSet(entries, "Heart rate");
+    dataSet.setColor(R.color.colorAccent);
+    LineData lineData = new LineData(dataSet);
+    mLineChart.setData(lineData);
+    mLineChart.invalidate();
   }
 
   @Override
