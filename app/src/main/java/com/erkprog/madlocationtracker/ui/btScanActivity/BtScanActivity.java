@@ -50,7 +50,12 @@ public class BtScanActivity extends AppCompatActivity implements BtDevicesAdapte
     mProgressBar = findViewById(R.id.bt_scan_prb);
     mProgressBar.setVisibility(GONE);
     btRefresh = findViewById(R.id.bt_scan_refresh);
-    btRefresh.setOnClickListener(v -> scanLeDevice(true));
+    btRefresh.setOnClickListener(v ->
+        {
+          mBtDevicesAdapter.clearData();
+          scanLeDevice(true);
+        }
+    );
 
     final BluetoothManager bluetoothManager =
         (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
@@ -63,6 +68,7 @@ public class BtScanActivity extends AppCompatActivity implements BtDevicesAdapte
     } else {
       scanLeDevice(true);
     }
+
   }
 
   private void scanLeDevice(final boolean enable) {

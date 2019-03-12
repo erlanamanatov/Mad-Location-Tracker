@@ -52,6 +52,11 @@ public class BtDevicesAdapter extends RecyclerView.Adapter<BtDevicesAdapter.BtDe
     }
   }
 
+  void clearData() {
+    mData.clear();
+    notifyDataSetChanged();
+  }
+
   @Override
   public int getItemCount() {
     return mData.size();

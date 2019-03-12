@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+
 public class TrackFitActivity extends AppCompatActivity implements View.OnClickListener,
     SharedPreferences.OnSharedPreferenceChangeListener,
     OnMapReadyCallback,
@@ -271,12 +272,14 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
         btStart.setText(R.string.start);
         btStop.setEnabled(false);
         btStop.setText(R.string.stop);
+        btScan.setVisibility(View.VISIBLE);
         break;
       case BT_STATE_TRACKING:
         btStart.setEnabled(false);
         btStart.setText(R.string.start);
         btStop.setEnabled(true);
         btStop.setText(R.string.stop);
+        btScan.setVisibility(View.GONE);
         break;
       case BT_STATE_PAUSED:
         btStart.setEnabled(true);
