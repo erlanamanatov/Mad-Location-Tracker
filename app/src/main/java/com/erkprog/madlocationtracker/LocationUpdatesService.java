@@ -289,7 +289,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   @Override
   public void onHeartRateRead(int heartRateValue) {
-    mRepository.saveHeartRate(new HeartRateModel(heartRateValue, mFitActivityId));
+    if (heartRateValue != 0) {
+      mRepository.saveHeartRate(new HeartRateModel(heartRateValue, mFitActivityId));
+    }
     if (mListener != null) {
       mListener.onHeartRateRead(heartRateValue);
     }
@@ -307,6 +309,18 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     if (mListener != null) {
       mListener.onStartMeasuringHeartRate();
     }
+  }
+
+  @Override
+  public void onRequestingHeartRateError() {
+    mBluetoothManager.stopScanHeartRate();
+    mListener.onHeartRateRead(0);
+  }
+
+  @Override
+  public void onNotificationSetupFailure() {
+    mBluetoothManager.stopScanHeartRate();
+    mListener.onBluetoothConnectionStateChanged("Heart rate notification setup failure");
   }
 
   @Override
@@ -361,7 +375,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     }
   }
 
-  public void removeFitListener(FitActivityStateListener listener) {
+  public void removeFitListener() {
     mListener = null;
   }
 

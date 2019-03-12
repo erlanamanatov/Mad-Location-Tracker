@@ -5,7 +5,6 @@ import android.location.Location;
 import com.erkprog.madlocationtracker.FitActivityStateListener;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.utils.Utils;
-import com.polidea.rxandroidble2.RxBleConnection;
 
 public class TrackActivityPresenter implements TrackActivityContract.Presenter, FitActivityStateListener {
 
@@ -110,7 +109,11 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter, 
   @Override
   public void onHeartRateRead(int value) {
     if (isAttached()) {
-      mView.showHeartRateValue(value);
+      if (value > 0) {
+        mView.showHeartRateValue(value);
+      } else {
+        mView.showErrorHeartRate();
+      }
     }
   }
 

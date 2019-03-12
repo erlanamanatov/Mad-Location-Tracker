@@ -110,7 +110,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
-      mService.removeFitListener(mPresenter);
+      mService.removeFitListener();
       mService = null;
       mBound = false;
     }
@@ -252,23 +252,22 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   public void showHeartRateValue(int value) {
-    runOnUiThread(() -> {
-      tvHeartRate.setText(String.format(Locale.UK, "Heart rate: %d", value));
-    });
+    runOnUiThread(() -> tvHeartRate.setText(String.format(Locale.UK, "Heart rate: %d", value)));
+  }
+
+  @Override
+  public void showErrorHeartRate() {
+    runOnUiThread(() -> tvHeartRate.setText(getString(R.string.hr_reading_error)));
   }
 
   @Override
   public void showBluetoothConnectionState(String state) {
-    runOnUiThread(() -> {
-      tvBleConnectionState.setText(state);
-    });
+    runOnUiThread(() -> tvBleConnectionState.setText(state));
   }
 
   @Override
   public void onStartMeasuringHeartRate() {
-    runOnUiThread(() -> {
-      tvHeartRate.setText(getString(R.string.measuring));
-    });
+    runOnUiThread(() -> tvHeartRate.setText(getString(R.string.measuring)));
   }
 
   @Override

@@ -26,4 +26,5 @@
   <string name="not_enough_hr_data">Not enough heart rate data</string>
   <string name="no_heart_rate_data">No heart rate data</string>
   <string name="avg_speed">Avg Speed</string>
+  <string name="hr_reading_error">Heart rate reading error</string>
 </resources>

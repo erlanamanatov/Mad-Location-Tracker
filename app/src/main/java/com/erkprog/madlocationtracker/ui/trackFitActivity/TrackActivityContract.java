@@ -47,6 +47,8 @@ class TrackActivityContract {
     void showBluetoothConnectionState(String state);
 
     void onStartMeasuringHeartRate();
+
+    void showErrorHeartRate();
   }
 
   interface Presenter extends ILifeCycle<View>, FitActivityStateListener {

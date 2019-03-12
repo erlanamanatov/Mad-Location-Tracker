@@ -44,6 +44,10 @@ class BluetoothDeviceManager {
     void onConnectionStateChanged(RxBleConnection.RxBleConnectionState state);
 
     void onRequestingHeartRate();
+
+    void onNotificationSetupFailure();
+
+    void onRequestingHeartRateError();
   }
 
   BluetoothDeviceManager(Context context, String deviceAddress) {
@@ -96,8 +100,8 @@ class BluetoothDeviceManager {
     compositeDisposable.add(connStateDisposable);
   }
 
-  public String getConnectionState(){
-    return mConnectionState != null? mConnectionState.toString() : "Not paired";
+  public String getConnectionState() {
+    return mConnectionState != null ? mConnectionState.toString() : "Not paired";
   }
 
   private void onConnectionFailure(Throwable throwable) {
@@ -118,12 +122,11 @@ class BluetoothDeviceManager {
       if (value.length == 2 && value[0] == 0) {
         int hrValue = (value[1] & 0xff);
         Utils.logd(TAG, "hr value: " + hrValue);
-        if (hrValue != 0) {
-          mListener.onHeartRateRead(hrValue);
-        }
+        mListener.onHeartRateRead(hrValue);
       }
     } catch (Exception exception) {
       Utils.loge(TAG, "handling heartRate error, value: " + Arrays.toString(value) + ", error:" + exception.getMessage());
+      mListener.onHeartRateRead(0);
     }
   }
 
@@ -165,6 +168,7 @@ class BluetoothDeviceManager {
 
   private void onWriteFailure(Throwable throwable) {
     Utils.logd(TAG, "onWriteFailure, " + throwable);
+    mListener.onRequestingHeartRateError();
   }
 
   private void removeHrCallbacks() {
@@ -209,6 +213,7 @@ class BluetoothDeviceManager {
 
   private void onNotificationSetupFailure(Throwable throwable) {
     Utils.loge(TAG, "onNotificationSetupFailure: " + throwable);
+    mListener.onNotificationSetupFailure();
   }
 
   void stop() {

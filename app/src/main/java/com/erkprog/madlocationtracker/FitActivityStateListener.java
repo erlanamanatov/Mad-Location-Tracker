@@ -7,4 +7,5 @@ public interface FitActivityStateListener {
   void onBluetoothConnectionStateChanged(String state);
 
   void onStartMeasuringHeartRate();
+
 }
