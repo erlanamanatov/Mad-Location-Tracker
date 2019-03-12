@@ -247,9 +247,9 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     tvHeartRate.setText("");
     tvBleConnectionState.setText("");
     chronometer.stop();
-    chronometer.setBase(SystemClock.elapsedRealtime());
     long trackingDuration = pausedTime - chronometer.getBase();
     mService.stopTracking(trackingDuration);
+    chronometer.setBase(SystemClock.elapsedRealtime());
   }
 
   @Override

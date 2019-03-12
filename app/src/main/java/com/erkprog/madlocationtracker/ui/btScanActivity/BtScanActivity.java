@@ -109,8 +109,12 @@ public class BtScanActivity extends AppCompatActivity implements BtDevicesAdapte
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-    if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_OK) {
-      scanLeDevice(true);
+    if (requestCode == REQUEST_ENABLE_BT) {
+      if (resultCode == RESULT_OK) {
+        scanLeDevice(true);
+      } else {
+        finish();
+      }
     }
   }
 
