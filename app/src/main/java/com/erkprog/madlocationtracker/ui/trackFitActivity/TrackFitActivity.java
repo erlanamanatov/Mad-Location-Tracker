@@ -380,7 +380,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
         mPresenter.onBtStopClicked();
         break;
 
-      case R.id.button_bt_scan:
+      case R.id.bt_status_ble_bt:
         Intent intent = new Intent(this, BtScanActivity.class);
         startActivityForResult(intent, REQUEST_BT_DEVICES);
         break;
@@ -427,8 +427,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     if (requestCode == REQUEST_BT_DEVICES && resultCode == RESULT_OK && data != null) {
       String deviceAddress = data.getStringExtra(BtScanActivity.EXTRA_DEVICE_ADDRESS);
       if (deviceAddress != null) {
-        Toast.makeText(TrackFitActivity.this, deviceAddress, Toast.LENGTH_SHORT).show();
-//        mService.setBtAddress(deviceAddress);
+        showMessage("Bluetooth device selected");
         mDeviceAddress = deviceAddress;
       }
     }
@@ -456,13 +455,13 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     btStart.setOnClickListener(this);
     btStop = findViewById(R.id.button_stop_tracking);
     btStop.setOnClickListener(this);
-    btScan = findViewById(R.id.button_bt_scan);
+    btScan = findViewById(R.id.bt_status_ble_bt);
     btScan.setOnClickListener(this);
     userPositionIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_user_position);
     tvDistance = findViewById(R.id.cr_act_distance);
     chronometer = findViewById(R.id.cr_act_time);
     chController = ChronometerController.getInstance();
-    tvHeartRate = findViewById(R.id.tv_heart_rate);
+    tvHeartRate = findViewById(R.id.bt_status_tv_heart);
   }
 
   @Override

@@ -351,7 +351,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public void setBtAddress(String deviceAddress) {
     mBluetoothManager = new BluetoothDeviceManager(this, deviceAddress);
     mBluetoothManager.setListener(this);
-    mBluetoothManager.start();
     Utils.logd(TAG, "bluetoothManager " + (mBluetoothManager == null ? "Null" : "NotNull"));
   }
 
