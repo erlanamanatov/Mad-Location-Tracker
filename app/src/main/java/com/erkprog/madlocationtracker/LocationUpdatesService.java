@@ -298,14 +298,14 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   @Override
   public void onConnectionStateChanged(RxBleConnection.RxBleConnectionState state) {
     if (mListener != null) {
-      mListener.onBluetoothConnectionStateChanged(state);
+      mListener.onBluetoothConnectionStateChanged(state.toString());
     }
   }
 
   @Override
   public void onRequestingHeartRate() {
     if (mListener != null) {
-     mListener.onStartMeasuringHeartRate();
+      mListener.onStartMeasuringHeartRate();
     }
   }
 
@@ -357,6 +357,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
   public void addFitListener(FitActivityStateListener listener) {
     mListener = listener;
+    if (mBluetoothManager != null) {
+      mListener.onBluetoothConnectionStateChanged(mBluetoothManager.getConnectionState());
+    }
   }
 
   public void removeFitListener(FitActivityStateListener listener) {

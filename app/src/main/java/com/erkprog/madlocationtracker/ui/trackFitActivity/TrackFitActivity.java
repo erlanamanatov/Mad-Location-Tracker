@@ -243,6 +243,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   @Override
   public void stopTracking() {
     setButtonsState(BT_STATE_INITIAL);
+    tvHeartRate.setText("");
     chronometer.stop();
     long trackingDuration = pausedTime - chronometer.getBase();
     mService.stopTracking(trackingDuration);
@@ -271,14 +272,14 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
         btStart.setText(R.string.start);
         btStop.setEnabled(false);
         btStop.setText(R.string.stop);
-        btScan.setVisibility(View.VISIBLE);
+//        btScan.setVisibility(View.VISIBLE);
         break;
       case BT_STATE_TRACKING:
         btStart.setEnabled(false);
         btStart.setText(R.string.start);
         btStop.setEnabled(true);
         btStop.setText(R.string.stop);
-        btScan.setVisibility(View.GONE);
+//        btScan.setVisibility(View.GONE);
         break;
       case BT_STATE_PAUSED:
         btStart.setEnabled(true);

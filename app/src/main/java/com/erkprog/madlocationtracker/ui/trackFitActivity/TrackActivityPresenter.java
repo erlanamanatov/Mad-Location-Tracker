@@ -115,9 +115,9 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter, 
   }
 
   @Override
-  public void onBluetoothConnectionStateChanged(RxBleConnection.RxBleConnectionState state) {
+  public void onBluetoothConnectionStateChanged(String state) {
     if (isAttached()) {
-      mView.showBluetoothConnectionState(state.toString());
+      mView.showBluetoothConnectionState(state);
     }
   }
 

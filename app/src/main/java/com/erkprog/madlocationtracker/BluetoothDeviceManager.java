@@ -26,6 +26,7 @@ class BluetoothDeviceManager {
   private RxBleDevice mBleDevice;
   private Handler mHrHandler;
   private BluetoothResultListener mListener;
+  private RxBleConnection.RxBleConnectionState mConnectionState;
 
   private RxBleClient mBleClient;
   private Observable<RxBleConnection> connectionObservable;
@@ -85,6 +86,7 @@ class BluetoothDeviceManager {
     Disposable connStateDisposable = mBleDevice.observeConnectionStateChanges()
         .subscribe(
             connectionState -> {
+              mConnectionState = connectionState;
               mListener.onConnectionStateChanged(connectionState);
             },
             throwable -> {
@@ -92,6 +94,10 @@ class BluetoothDeviceManager {
 
     compositeDisposable.add(connectionDisposable);
     compositeDisposable.add(connStateDisposable);
+  }
+
+  public String getConnectionState(){
+    return mConnectionState != null? mConnectionState.toString() : "Not paired";
   }
 
   private void onConnectionFailure(Throwable throwable) {
