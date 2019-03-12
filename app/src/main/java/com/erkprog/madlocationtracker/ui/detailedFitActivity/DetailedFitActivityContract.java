@@ -24,6 +24,8 @@ class DetailedFitActivityContract {
     void showTrackingTime(String formattedDuration);
 
     void plotGraph(List<Entry> entries, long reft);
+
+    void hideGraph();
   }
 
   interface Presenter extends ILifeCycle<View> {

@@ -70,8 +70,8 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mPresenter = new DetailedActivityPresenter(AppApplication.getInstance().getRepository(), fitActivity);
     mPresenter.bind(this);
     mPresenter.processFitActivity(fitActivity);
+    mPresenter.getHeartRate();
     mLineChart = findViewById(R.id.chart);
-    mLineChart.setVisibility(View.GONE);
   }
 
   @Override
@@ -81,7 +81,11 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
     mMap.getUiSettings().setTiltGesturesEnabled(false);
     mMap.setOnMarkerClickListener(marker -> true);
     mPresenter.getLocations();
-    mPresenter.getHeartRate();
+  }
+
+  @Override
+  public void hideGraph() {
+    mLineChart.setVisibility(View.GONE);
   }
 
   @Override

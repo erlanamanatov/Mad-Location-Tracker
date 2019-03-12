@@ -83,7 +83,13 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
             if (!isAttached()) {
               return;
             }
+            if (heartRateModels.size() == 0) {
+              mView.hideGraph();
+              mView.showMessage(R.string.no_heart_rate_data);
+              return;
+            }
             if (heartRateModels.size() < 4) {
+              mView.hideGraph();
               mView.showMessage(R.string.not_enough_hr_data);
               return;
             }
