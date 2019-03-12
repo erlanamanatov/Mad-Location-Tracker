@@ -71,6 +71,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   Chronometer chronometer;
   private long pausedTime;
   private ChronometerController chController;
+  View bleViewgroup;
 
   private TrackActivityContract.Presenter mPresenter;
 
@@ -86,7 +87,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   private BitmapDescriptor userPositionIcon;
   private static final float ROUTE_WIDTH = 25;
   private static final String ROUTE_COLOR = "#801B60FE";
-  private TextView tvHeartRate;
+  private TextView tvHeartRate, tvBleConnectionState;
 
   private String mDeviceAddress;
 
@@ -251,17 +252,23 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
 
   @Override
   public void showHeartRateValue(int value) {
-    tvHeartRate.setText(String.format(Locale.UK, "Heart rate: %d", value));
+    runOnUiThread(() -> {
+      tvHeartRate.setText(String.format(Locale.UK, "Heart rate: %d", value));
+    });
   }
 
   @Override
   public void showBluetoothConnectionState(String state) {
-    showMessage(state);
+    runOnUiThread(() -> {
+      tvBleConnectionState.setText(state);
+    });
   }
 
   @Override
   public void onStartMeasuringHeartRate() {
-    tvHeartRate.setText(getString(R.string.measuring));
+    runOnUiThread(() -> {
+      tvHeartRate.setText(getString(R.string.measuring));
+    });
   }
 
   @Override
@@ -272,14 +279,14 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
         btStart.setText(R.string.start);
         btStop.setEnabled(false);
         btStop.setText(R.string.stop);
-//        btScan.setVisibility(View.VISIBLE);
+        btScan.setEnabled(true);
         break;
       case BT_STATE_TRACKING:
         btStart.setEnabled(false);
         btStart.setText(R.string.start);
         btStop.setEnabled(true);
         btStop.setText(R.string.stop);
-//        btScan.setVisibility(View.GONE);
+        btScan.setEnabled(false);
         break;
       case BT_STATE_PAUSED:
         btStart.setEnabled(true);
@@ -462,6 +469,8 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     chronometer = findViewById(R.id.cr_act_time);
     chController = ChronometerController.getInstance();
     tvHeartRate = findViewById(R.id.bt_status_tv_heart);
+    tvBleConnectionState = findViewById(R.id.bt_status_tv_state);
+    bleViewgroup = findViewById(R.id.cr_bt_state);
   }
 
   @Override

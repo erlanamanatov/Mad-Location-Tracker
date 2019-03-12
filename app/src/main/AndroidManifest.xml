@@ -24,7 +24,8 @@
         android:name="org.apache.http.legacy"
         android:required="false"/>
 
-    <activity android:name=".ui.trackFitActivity.TrackFitActivity">
+    <activity android:name=".ui.trackFitActivity.TrackFitActivity"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
     </activity>
 
     <service
