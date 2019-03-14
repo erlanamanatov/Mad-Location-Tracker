@@ -7,6 +7,8 @@ import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 import com.erkprog.madlocationtracker.utils.Utils;
 import com.github.mikephil.charting.data.Entry;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +24,11 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
 
   private DetailedFitActivityContract.View mView;
   private LocalRepository mRepository;
-  private FitActivity mFitActivity;
+  private long mFitActivityId;
 
-  DetailedActivityPresenter(LocalRepository repository, FitActivity fitActivity) {
+  DetailedActivityPresenter(LocalRepository repository, long fitActivityId) {
     mRepository = repository;
-    mFitActivity = fitActivity;
+    mFitActivityId = fitActivityId;
   }
 
   @Override
@@ -45,14 +47,16 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
   @Override
   public void getLocations() {
     mRepository.getDatabase().locationDao()
-        .getLocationsByActivity(mFitActivity.getId(), LocationItem.TAG_GEO_FILTERED)
+        .getLocationsByActivity(mFitActivityId, LocationItem.TAG_GEO_FILTERED)
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new DisposableSingleObserver<List<LocationItem>>() {
           @Override
           public void onSuccess(List<LocationItem> locationItems) {
             if (isAttached() && locationItems.size() > 0) {
-              mView.showTrack(locationItems);
+              mView.showStartOfRoute(locationItems.get(0));
+              mView.showEndOfRoute(locationItems.get(locationItems.size() - 1));
+              processLocations(locationItems);
             }
           }
 
@@ -65,11 +69,48 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
         });
   }
 
+  private void processLocations(List<LocationItem> locationItems) {
+    List<LatLng> routePoints = new ArrayList<>();
+    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+    for (LocationItem item : locationItems) {
+      routePoints.add(item.getLatLng());
+      builder.include(item.getLatLng());
+    }
+
+    LatLngBounds bounds = builder.build();
+    bounds = adjustBoundsForMaxZoomLevel(bounds);
+
+    if (isAttached()) {
+      mView.showRoute(routePoints, bounds);
+    }
+  }
+
+  private LatLngBounds adjustBoundsForMaxZoomLevel(LatLngBounds bounds) {
+    LatLng sw = bounds.southwest;
+    LatLng ne = bounds.northeast;
+    double deltaLat = Math.abs(sw.latitude - ne.latitude);
+    double deltaLon = Math.abs(sw.longitude - ne.longitude);
+
+    final double zoomN = 0.001;
+    if (deltaLat < zoomN) {
+      sw = new LatLng(sw.latitude - (zoomN - deltaLat / 2), sw.longitude);
+      ne = new LatLng(ne.latitude + (zoomN - deltaLat / 2), ne.longitude);
+      bounds = new LatLngBounds(sw, ne);
+    } else if (deltaLon < zoomN) {
+      sw = new LatLng(sw.latitude, sw.longitude - (zoomN - deltaLon / 2));
+      ne = new LatLng(ne.latitude, ne.longitude + (zoomN - deltaLon / 2));
+      bounds = new LatLngBounds(sw, ne);
+    }
+
+    return bounds;
+  }
+
   @Override
   public void getHeartRate() {
-    Utils.logd(TAG, "getHeartRate data , fitId " + mFitActivity.getId());
+    Utils.logd(TAG, "getHeartRate data , fitId " + mFitActivityId);
     mRepository.getDatabase().heartRateDao()
-        .getHeartRateByFitId(mFitActivity.getId())
+        .getHeartRateByFitId(mFitActivityId)
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new MaybeObserver<List<HeartRateModel>>() {
@@ -105,11 +146,17 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
           @Override
           public void onError(Throwable e) {
             Utils.logd(TAG, "heartRate error: " + e);
+            if (isAttached()) {
+              mView.hideGraph();
+            }
           }
 
           @Override
           public void onComplete() {
             Utils.logd(TAG, "heart Rate empty");
+            if (isAttached()) {
+              mView.hideGraph();
+            }
           }
         });
   }

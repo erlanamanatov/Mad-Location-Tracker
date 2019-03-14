@@ -32,7 +32,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DetailedFitActivity extends FragmentActivity implements OnMapReadyCallback, DetailedFitActivityContract.View {
@@ -67,7 +66,7 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
 
     FitActivity fitActivity = getIntent().getParcelableExtra(KEY_FIT_ACTIVITY);
 
-    mPresenter = new DetailedActivityPresenter(AppApplication.getInstance().getRepository(), fitActivity);
+    mPresenter = new DetailedActivityPresenter(AppApplication.getInstance().getRepository(), fitActivity.getId());
     mPresenter.bind(this);
     mPresenter.processFitActivity(fitActivity);
     mPresenter.getHeartRate();
@@ -102,6 +101,33 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   }
 
   @Override
+  public void showStartOfRoute(LocationItem locationItem) {
+    LatLng firstLocation = new LatLng(locationItem.getLatitude(), locationItem.getLongitude());
+    mMap.addMarker(new MarkerOptions().position(firstLocation)
+        .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_icon))
+        .anchor(0.5f, 0.5f));
+  }
+
+  @Override
+  public void showEndOfRoute(LocationItem locationItem) {
+    LatLng lastPosition = new LatLng(locationItem.getLatitude(), locationItem.getLongitude());
+    mMap.addMarker(new MarkerOptions()
+        .position(lastPosition)
+        .icon(BitmapDescriptorFactory.fromResource(R.drawable.finish_icon)));
+  }
+
+  @Override
+  public void showRoute(List<LatLng> routePoints, LatLngBounds bounds) {
+    Polyline route = mMap.addPolyline(new PolylineOptions()
+        .width(WIDTH_OF_ROUTE)
+        .color(Color.parseColor("#801B60FE"))
+        .geodesic(true));
+    route.setPoints(routePoints);
+    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, MAP_PADDING);
+    mMap.moveCamera(cu);
+  }
+
+  @Override
   public void showDuration(String totalDuration) {
     tvDuration.setText(totalDuration);
   }
@@ -124,63 +150,6 @@ public class DetailedFitActivity extends FragmentActivity implements OnMapReadyC
   @Override
   public void showMessage(int resId) {
     Snackbar.make(findViewById(R.id.act_detail_duration), getText(resId), Snackbar.LENGTH_LONG).show();
-  }
-
-  @Override
-  public void showTrack(List<LocationItem> locationItems) {
-    List<LatLng> routePoints = new ArrayList<>();
-    LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-    for (LocationItem item : locationItems) {
-      routePoints.add(item.getLatLng());
-      builder.include(item.getLatLng());
-    }
-    Polyline route = mMap.addPolyline(new PolylineOptions()
-        .width(WIDTH_OF_ROUTE)
-        .color(Color.parseColor("#801B60FE"))
-        .geodesic(true));
-    route.setPoints(routePoints);
-
-    displayFirstLocation(locationItems.get(0));
-    displayLastLocation(locationItems.get(locationItems.size() - 1));
-
-    LatLngBounds bounds = builder.build();
-    bounds = adjustBoundsForMaxZoomLevel(bounds);
-    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, MAP_PADDING);
-    mMap.moveCamera(cu);
-  }
-
-  private LatLngBounds adjustBoundsForMaxZoomLevel(LatLngBounds bounds) {
-    LatLng sw = bounds.southwest;
-    LatLng ne = bounds.northeast;
-    double deltaLat = Math.abs(sw.latitude - ne.latitude);
-    double deltaLon = Math.abs(sw.longitude - ne.longitude);
-
-    final double zoomN = 0.001;
-    if (deltaLat < zoomN) {
-      sw = new LatLng(sw.latitude - (zoomN - deltaLat / 2), sw.longitude);
-      ne = new LatLng(ne.latitude + (zoomN - deltaLat / 2), ne.longitude);
-      bounds = new LatLngBounds(sw, ne);
-    }
-    else if (deltaLon < zoomN) {
-      sw = new LatLng(sw.latitude, sw.longitude - (zoomN - deltaLon / 2));
-      ne = new LatLng(ne.latitude, ne.longitude + (zoomN - deltaLon / 2));
-      bounds = new LatLngBounds(sw, ne);
-    }
-
-    return bounds;
-  }
-
-  private void displayLastLocation(LocationItem locationItem) {
-    LatLng lastPosition = new LatLng(locationItem.getLatitude(), locationItem.getLongitude());
-    mMap.addMarker(new MarkerOptions().position(lastPosition).icon(BitmapDescriptorFactory.fromResource(R.drawable.finish_icon)));
-  }
-
-  private void displayFirstLocation(LocationItem locationItem) {
-    LatLng firstLocation = new LatLng(locationItem.getLatitude(), locationItem.getLongitude());
-    mMap.addMarker(new MarkerOptions().position(firstLocation)
-        .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_icon))
-        .anchor(0.5f, 0.5f));
   }
 
   public static Intent getIntent(Context context, FitActivity fitActivity) {
