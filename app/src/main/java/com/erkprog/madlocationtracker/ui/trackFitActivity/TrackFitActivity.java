@@ -245,11 +245,15 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
   public void stopTracking() {
     setButtonsState(BT_STATE_INITIAL);
     tvHeartRate.setText("");
+    tvDistance.setText(R.string.zero_meters);
     tvBleConnectionState.setText("");
     chronometer.stop();
     long trackingDuration = pausedTime - chronometer.getBase();
     mService.stopTracking(trackingDuration);
     chronometer.setBase(SystemClock.elapsedRealtime());
+    if (runningPathPolyline != null) {
+      runningPathPolyline.remove();
+    }
   }
 
   @Override
