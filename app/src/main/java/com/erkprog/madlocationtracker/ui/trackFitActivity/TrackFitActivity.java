@@ -253,6 +253,7 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
     chronometer.setBase(SystemClock.elapsedRealtime());
     if (runningPathPolyline != null) {
       runningPathPolyline.remove();
+      runningPathPolyline = null;
     }
   }
 
