@@ -485,6 +485,10 @@ public class TrackFitActivity extends AppCompatActivity implements View.OnClickL
       unbindService(mServiceConnection);
       mBound = false;
     }
+    if (runningPathPolyline != null) {
+      runningPathPolyline.remove();
+      runningPathPolyline = null;
+    }
     PreferenceManager.getDefaultSharedPreferences(this)
         .unregisterOnSharedPreferenceChangeListener(this);
     if (Utils.requestingLocationUpdates(this)) {
