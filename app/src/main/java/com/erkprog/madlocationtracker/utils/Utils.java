@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class Utils {
+  private static final String TAG = "Utils";
 
   public static final String KEY_REQUESTING_LOCATION_UPDATES = "requesting_location_updates";
 
@@ -29,8 +30,8 @@ public class Utils {
     try {
       SimpleDateFormat dayMonth = new SimpleDateFormat("EEEE, MMM d", new Locale("en"));
       SimpleDateFormat hourMinute = new SimpleDateFormat("hh:mm a", new Locale("en"));
-      String dm =  dayMonth.format(resourceDate);
-      String hm =  hourMinute.format(resourceDate);
+      String dm = dayMonth.format(resourceDate);
+      String hm = hourMinute.format(resourceDate);
       return String.format("%s at %s", dm, hm);
     } catch (Exception e) {
       return "?";
@@ -51,7 +52,8 @@ public class Utils {
   public static String getFormattedSpeed(float avgSpeed) {
     try {
       String unit = "km/h";
-      return String.format(Locale.UK, "%.2f %s", avgSpeed, unit);
+      String formattedSpeed = String.format(Locale.UK, "%.2f %s", avgSpeed, unit);
+      return formattedSpeed;
     } catch (Exception e) {
       return "?";
     }
