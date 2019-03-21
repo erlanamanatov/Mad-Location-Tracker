@@ -15,6 +15,7 @@ import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -86,5 +87,9 @@ public class LocalRepository {
             Utils.loge(TAG, "saving error, heartrate: " + heartRate.toString());
           }
         });
+  }
+
+  public Single<List<LocationItem>> getLocationsByActivity(long fitActivityId, String tagGeoFiltered) {
+    return mDatabase.locationDao().getLocationsByActivity(fitActivityId, tagGeoFiltered);
   }
 }

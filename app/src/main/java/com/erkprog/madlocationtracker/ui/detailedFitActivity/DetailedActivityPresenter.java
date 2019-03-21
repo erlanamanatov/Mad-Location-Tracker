@@ -46,7 +46,7 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
 
   @Override
   public void getLocations() {
-    mRepository.getDatabase().locationDao()
+    mRepository
         .getLocationsByActivity(mFitActivityId, LocationItem.TAG_GEO_FILTERED)
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
