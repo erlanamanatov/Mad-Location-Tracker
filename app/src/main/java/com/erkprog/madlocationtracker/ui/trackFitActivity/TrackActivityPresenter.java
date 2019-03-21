@@ -1,6 +1,7 @@
 package com.erkprog.madlocationtracker.ui.trackFitActivity;
 
 import android.location.Location;
+import android.util.Log;
 
 import com.erkprog.madlocationtracker.FitActivityStateListener;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
@@ -47,10 +48,10 @@ public class TrackActivityPresenter implements TrackActivityContract.Presenter, 
   public void onBtStartClicked() {
     if (mView.getCurrentFitActivity() == null) {
       mView.startTracking();
-    } else {
-      if (mView.getCurrentFitActivity().getStatus() == FitActivity.STATUS_PAUSED) {
-        mView.continueTracking();
-      }
+      return;
+    }
+    if (mView.getCurrentFitActivity().getStatus() == FitActivity.STATUS_PAUSED) {
+      mView.continueTracking();
     }
   }
 

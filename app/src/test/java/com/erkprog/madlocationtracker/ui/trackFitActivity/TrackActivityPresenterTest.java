@@ -14,6 +14,7 @@ import org.mockito.junit.MockitoRule;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -83,5 +84,39 @@ public class TrackActivityPresenterTest {
     presenter.onHeartRateRead(67);
     verify(view, never()).showHeartRateValue(anyInt());
     verify(view, never()).showErrorHeartRate();
+  }
+
+  @Test
+  public void onServiceConnected_WhenNotGettingLocationUpdates_ShouldSetButtonInitialState() {
+    presenter.onServiceConnected(false);
+    verify(view, never()).showCurrentPosition(any());
+    verify(view, never()).showDistance(anyString());
+    verify(view, never()).showRoute(anyList());
+    verify(view).setButtonsState(TrackFitActivity.BT_STATE_INITIAL);
+  }
+
+  @Test
+  public void onServiceConnected_WhenGettingLocationUpdatesAndFitActivityIsNull_ShouldShowCurrentPosition() {
+    when(view.getCurrentLocation()).thenReturn(mock(Location.class));
+    when(view.isMapReady()).thenReturn(true);
+    presenter.onServiceConnected(true);
+    verify(view).showCurrentPosition(any());
+    verify(view, never()).showRoute(any());
+    verify(view, never()).showDistance(anyString());
+  }
+
+  @Test
+  public void onServiceConnected_WhenGettingLocationUpdatesAndFitActivityStatusTracking_ShouldShowDuration() {
+    when(view.getCurrentLocation()).thenReturn(mock(Location.class));
+    when(view.isMapReady()).thenReturn(true);
+    FitActivity fitActivity = mock(FitActivity.class);
+    when(fitActivity.getStatus()).thenReturn(FitActivity.STATUS_TRACKING);
+    when(view.getCurrentFitActivity()).thenReturn(fitActivity);
+    when(view.getLocationsList()).thenReturn(null);
+
+    presenter.onServiceConnected(true);
+    verify(view).setButtonsState(TrackFitActivity.BT_STATE_TRACKING);
+    verify(view).showDurationStateTracking();
+    verify(view, never()).showRoute(any());
   }
 }
