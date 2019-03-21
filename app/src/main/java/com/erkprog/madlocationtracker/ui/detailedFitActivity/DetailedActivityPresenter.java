@@ -108,8 +108,7 @@ public class DetailedActivityPresenter implements DetailedFitActivityContract.Pr
 
   @Override
   public void getHeartRate() {
-    Utils.logd(TAG, "getHeartRate data , fitId " + mFitActivityId);
-    mRepository.getDatabase().heartRateDao()
+    mRepository
         .getHeartRateByFitId(mFitActivityId)
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())

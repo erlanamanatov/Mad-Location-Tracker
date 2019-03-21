@@ -4,6 +4,7 @@ import android.location.Location;
 
 import com.erkprog.madlocationtracker.R;
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
+import com.erkprog.madlocationtracker.data.entity.HeartRateModel;
 import com.erkprog.madlocationtracker.data.entity.LocationItem;
 import com.erkprog.madlocationtracker.data.repository.LocalRepository;
 
@@ -20,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Maybe;
 import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.android.plugins.RxAndroidPlugins;
@@ -31,6 +33,7 @@ import io.reactivex.plugins.RxJavaPlugins;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -130,6 +133,69 @@ public class DetailedActivityPresenterTest {
         .thenReturn(Single.error(new Exception("some error")));
     presenter.getLocations();
     verify(view, never()).showMessage(anyInt());
+  }
+
+  @Test
+  public void getHeartRate_WhenOnSuccessAndViewIsAttachedAndEnoughData_ShouldPlotGraph() {
+    when(repository.getHeartRateByFitId(fitActivityId))
+        .thenReturn(Maybe.just(getFakeHeartRateData()));
+
+    presenter.getHeartRate();
+    verify(view).plotGraph(any(), anyLong());
+  }
+
+  @Test
+  public void getHeartRate_WhenOnSuccessAndViewIsNotAttachedAndEnoughData_ShouldDoNothing() {
+    presenter.unBind();
+    when(repository.getHeartRateByFitId(fitActivityId))
+        .thenReturn(Maybe.just(getFakeHeartRateData()));
+
+    presenter.getHeartRate();
+    verify(view, never()).plotGraph(any(), anyLong());
+    verify(view, never()).hideGraph();
+  }
+
+  @Test
+  public void getHeartRate_WhenOnSuccessAndViewIsAttachedAndNotEnoughData_ShouldHideGraph() {
+    List<HeartRateModel> heartRateModels = mock(List.class);
+    when(heartRateModels.size()).thenReturn(2);
+    when(repository.getHeartRateByFitId(fitActivityId))
+        .thenReturn(Maybe.just(heartRateModels));
+
+    presenter.getHeartRate();
+    verify(view).hideGraph();
+    verify(view).showMessage(R.string.not_enough_hr_data);
+  }
+
+  @Test
+  public void getHeartRate_WhenOnErrorAndViewIsAttached_ShouldHideGraph() {
+    when(repository.getHeartRateByFitId(fitActivityId))
+        .thenReturn(Maybe.error(new Exception("some error")));
+
+    presenter.getHeartRate();
+    verify(view).hideGraph();
+  }
+
+  @Test
+  public void getHeartRate_WhenOnErrorAndViewIsNotAttached_ShouldDoNothing() {
+    presenter.unBind();
+    when(repository.getHeartRateByFitId(fitActivityId))
+        .thenReturn(Maybe.error(new Exception("some error")));
+
+    presenter.getHeartRate();
+    verify(view, never()).hideGraph();
+    verify(view, never()).plotGraph(any(), anyLong());
+  }
+
+  private List<HeartRateModel> getFakeHeartRateData() {
+    List<HeartRateModel> data = new ArrayList<>();
+    data.add(new HeartRateModel(50, 1));
+    data.add(new HeartRateModel(45, 1));
+    data.add(new HeartRateModel(56, 1));
+    data.add(new HeartRateModel(77, 1));
+    data.add(new HeartRateModel(88, 1));
+    data.add(new HeartRateModel(50, 1));
+    return data;
   }
 
   private List<LocationItem> getFakeLocationList() {
