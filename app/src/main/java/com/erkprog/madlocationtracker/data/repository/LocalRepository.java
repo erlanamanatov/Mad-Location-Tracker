@@ -97,4 +97,8 @@ public class LocalRepository {
   public Maybe<List<HeartRateModel>> getHeartRateByFitId(long fitActivityId) {
     return mDatabase.heartRateDao().getHeartRateByFitId(fitActivityId);
   }
+
+  public Maybe<List<FitActivity>> getAllActivities() {
+    return mDatabase.activityDao().getAllActivities();
+  }
 }
