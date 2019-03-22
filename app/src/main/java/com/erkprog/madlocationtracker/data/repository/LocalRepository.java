@@ -1,6 +1,6 @@
 package com.erkprog.madlocationtracker.data.repository;
 
-import android.arch.persistence.room.Room;
+import androidx.room.Room;
 import android.content.Context;
 import android.location.Location;
 

@@ -13,8 +13,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.erkprog.madlocationtracker.data.entity.FitActivity;
 import com.erkprog.madlocationtracker.data.entity.HeartRateModel;
