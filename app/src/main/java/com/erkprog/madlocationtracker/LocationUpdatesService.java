@@ -1,5 +1,6 @@
 package com.erkprog.madlocationtracker;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,6 +14,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+
+import androidx.annotation.RestrictTo;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -30,6 +33,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import mad.location.manager.lib.Interfaces.LocationServiceInterface;
+import mad.location.manager.lib.Interfaces.SimpleTempCallback;
 import mad.location.manager.lib.Loggers.GeohashRTFilter;
 import mad.location.manager.lib.Services.KalmanLocationService;
 import mad.location.manager.lib.Services.ServicesHelper;
@@ -66,9 +70,13 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   private ArrayList<Location> listLocations;
   private FitActivityStateListener mListener;
 
+  @RestrictTo (RestrictTo.Scope.TESTS)
+  static boolean isServiceStarted;
+
   public LocationUpdatesService() {
   }
 
+  @SuppressLint("RestrictedApi")
   @Override
   public void onCreate() {
     Utils.logd(TAG, "Service on create");
@@ -89,6 +97,8 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
 
     mRepository = AppApplication.getInstance().getRepository();
     ServicesHelper.addLocationServiceInterface(this);
+
+    isServiceStarted = true;
   }
 
   @Override
@@ -223,9 +233,9 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
         mGeohashRTFilter.reset(null);
         stopSelf();
       });
-    } catch (SecurityException unlikely) {
+    } catch (SecurityException exception) {
       Utils.setRequestingLocationUpdates(this, true);
-      Utils.logd(TAG, "Lost location permission. Could not remove updates. " + unlikely);
+      Utils.logd(TAG, "Lost location permission. Could not remove updates. " + exception);
     } catch (Exception exception) {
       Utils.loge(TAG, "Removing location updates: " + exception.getMessage());
     }
@@ -335,6 +345,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     }
   }
 
+  @SuppressLint("RestrictedApi")
   @Override
   public void onDestroy() {
     Utils.logd(TAG, "Service on destroy");
@@ -344,6 +355,7 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     if (mBluetoothManager != null) {
       mBluetoothManager.stop();
     }
+    isServiceStarted = false;
     super.onDestroy();
   }
 
@@ -365,7 +377,6 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
   public void setBtAddress(String deviceAddress) {
     mBluetoothManager = new BluetoothDeviceManager(this, deviceAddress);
     mBluetoothManager.setListener(this);
-    Utils.logd(TAG, "bluetoothManager " + (mBluetoothManager == null ? "Null" : "NotNull"));
   }
 
   public void addFitListener(FitActivityStateListener listener) {
@@ -383,5 +394,10 @@ public class LocationUpdatesService extends Service implements LocationServiceIn
     public LocationUpdatesService getService() {
       return LocationUpdatesService.this;
     }
+  }
+
+  @SuppressLint("RestrictedApi")
+  public boolean isServiceStarted() {
+    return isServiceStarted;
   }
 }
